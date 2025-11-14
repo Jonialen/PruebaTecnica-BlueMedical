@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { TaskController } from "../controllers/tasks.controller";
-import { authMiddleware } from "../middlewares/auth.middleware";
+import { TaskController } from "../controllers/tasks.controller.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authMiddleware);
 router.get("/", TaskController.list);

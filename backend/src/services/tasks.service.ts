@@ -1,4 +1,4 @@
-import { TaskRepository } from "../repositories/task.repository";
+import { TaskRepository } from "../repositories/task.repository.js";
 
 export const TaskService = {
     list: async (userId: number) => TaskRepository.findAllByUser(userId),
