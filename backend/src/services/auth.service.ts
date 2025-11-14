@@ -1,6 +1,6 @@
-import { UserRepository } from "../repositories/user.repository";
-import { hashPassword, comparePassword } from "../utils/bcrypt";
-import { generateToken } from "../utils/jwt";
+import { UserRepository } from "../repositories/user.repository.js";
+import { hashPassword, comparePassword } from "../utils/bcrypt.js";
+import { generateToken } from "../utils/jwt.js";
 
 export const AuthService = {
     register: async (name: string, email: string, password: string) => {

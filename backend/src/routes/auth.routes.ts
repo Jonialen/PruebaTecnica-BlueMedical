@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/auth.controller";
+import { AuthController } from "../controllers/auth.controller.js";
 import {
     registerValidator,
     loginValidator,
-} from "../validators/auth.validator";
+} from "../validators/auth.validator.js";
 import { validationResult } from "express-validator";
 
-const router = Router();
+const router: Router = Router();
 
 const validate = (req: any, res: any, next: any) => {
     const errors = validationResult(req);
