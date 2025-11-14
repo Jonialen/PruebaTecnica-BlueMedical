@@ -1,10 +1,12 @@
+// app.ts (src/app.ts)
+
 import express, { Express } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/auth.routes";
-import taskRoutes from "./routes/tasks.routes";
-import { corsOptions, corsDevOptions } from "./config/cors.config";
-import { errorHandler } from "./middlewares/error.middleware";
+import authRoutes from "./routes/auth.routes.js";
+import taskRoutes from "./routes/tasks.routes.js";
+import { corsOptions, corsDevOptions } from "./config/cors.config.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 dotenv.config();
 
