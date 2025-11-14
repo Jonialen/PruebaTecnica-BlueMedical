@@ -4,18 +4,14 @@ import {
     registerValidator,
     loginValidator,
 } from "../validators/auth.validator.js";
-import { validationResult } from "express-validator";
+import { validate } from "../middlewares/validation.middleware.js";
 
 const router: Router = Router();
 
-const validate = (req: any, res: any, next: any) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-        return res.status(400).json({ errors: errors.array() });
-    next();
-};
-
+// POST /api/register - Registro de usuario
 router.post("/register", registerValidator, validate, AuthController.register);
+
+// POST /api/login - Inicio de sesion
 router.post("/login", loginValidator, validate, AuthController.login);
 
 export default router;
