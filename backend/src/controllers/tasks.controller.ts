@@ -1,23 +1,75 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { TaskService } from "../services/tasks.service.js";
+import { toTaskResponse, toTaskListResponse } from "../dtos/task.dto.js";
+import { asyncHandler } from "../middlewares/error.middleware.js";
 
 export const TaskController = {
-    list: async (req: Request, res: Response) => {
+    list: asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
         const user = (req as any).user;
-        const tasks = await TaskService.list(user.id);
-        res.json(tasks);
-    },
-    create: async (req: Request, res: Response) => {
+        const { status } = req.query;
+        
+        const tasks = await TaskService.list(user.id, status as string);
+        
+        res.json({
+            status: "success",
+            data: {
+                tasks: toTaskListResponse(tasks),
+                count: tasks.length,
+            },
+        });
+    }),
+
+    create: asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
         const user = (req as any).user;
         const task = await TaskService.create(user.id, req.body);
-        res.status(201).json(task);
-    },
-    update: async (req: Request, res: Response) => {
-        const task = await TaskService.update(Number(req.params.id), req.body);
-        res.json(task);
-    },
-    remove: async (req: Request, res: Response) => {
-        await TaskService.remove(Number(req.params.id));
-        res.status(204).send();
-    },
+        
+        res.status(201).json({
+            status: "success",
+            message: "Task created successfully",
+            data: {
+                task: toTaskResponse(task),
+            },
+        });
+    }),
+
+    update: asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+        const user = (req as any).user;
+        const taskId = Number(req.params.id);
+        
+        const task = await TaskService.update(taskId, user.id, req.body);
+        
+        res.json({
+            status: "success",
+            message: "Task updated successfully",
+            data: {
+                task: toTaskResponse(task),
+            },
+        });
+    }),
+
+    remove: asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+        const user = (req as any).user;
+        const taskId = Number(req.params.id);
+        
+        await TaskService.remove(taskId, user.id);
+        
+        res.status(200).json({
+            status: "success",
+            message: "Task deleted successfully",
+        });
+    }),
+
+    getById: asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+        const user = (req as any).user;
+        const taskId = Number(req.params.id);
+        
+        const task = await TaskService.getById(taskId, user.id);
+        
+        res.json({
+            status: "success",
+            data: {
+                task: toTaskResponse(task),
+            },
+        });
+    }),
 };
