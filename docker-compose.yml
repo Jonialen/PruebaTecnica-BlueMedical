@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  db:
+    build: ./database
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+
+  backend:
+    build: ./backend
+    container_name: backend_api
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${ENVIRONMENT}
+    ports:
+      - "3001:3001"
+
+  # frontend:
+  #   build: ./frontend
+  #   container_name: frontend_app
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     NODE_ENV: ${ENVIRONMENT}
+  #   ports:
+  #     - "5173:5173"
+
+volumes:
+  db_data:
