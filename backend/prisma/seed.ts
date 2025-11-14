@@ -1,4 +1,4 @@
-// seed.ts (prisma/seed.ts)
+// prisma/seed.ts
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -8,45 +8,73 @@ const prisma = new PrismaClient();
 async function main() {
     console.log("Iniciando seed de prueba...");
 
-    // Elimina datos previos (opcional)
+    // Limpiar tablas
     await prisma.tasks.deleteMany();
     await prisma.users.deleteMany();
 
-    // Crear usuario demo
-    const hashedPassword = await bcrypt.hash("123456", 10);
-    const user = await prisma.users.create({
-        data: {
+    // Lista de usuarios a crear
+    const usersData = [
+        {
             name: "Demo User",
             email: "demo@roble.com",
-            password: hashedPassword,
+            password: "123456",
         },
-    });
+        {
+            name: "Juan Pérez",
+            email: "juan@roble.com",
+            password: "123456",
+        },
+        {
+            name: "Ana Martínez",
+            email: "ana@roble.com",
+            password: "123456",
+        },
+        {
+            name: "Carlos López",
+            email: "carlos@roble.com",
+            password: "123456",
+        },
+    ];
 
-    // Crear tareas de ejemplo
-    await prisma.tasks.createMany({
-        data: [
-            {
-                title: "Primera tarea",
-                description: "Esta es una tarea pendiente",
-                status: "PENDING",
-                userId: user.id,
-            },
-            {
-                title: "Tarea en progreso",
-                description: "Esta tarea está en curso",
-                status: "IN_PROGRESS",
-                userId: user.id,
-            },
-            {
-                title: "Tarea completada",
-                description: "Esta está finalizada correctamente",
-                status: "COMPLETED",
-                userId: user.id,
-            },
-        ],
-    });
+    for (const userData of usersData) {
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    console.log(`Seed completado: usuario ${user.email} con 3 tareas`);
+        const user = await prisma.users.create({
+            data: {
+                name: userData.name,
+                email: userData.email,
+                password: hashedPassword,
+            },
+        });
+
+        // Crear tareas para cada usuario
+        await prisma.tasks.createMany({
+            data: [
+                {
+                    title: `Tarea pendiente de ${user.name}`,
+                    description: "Tarea generada automáticamente",
+                    status: "PENDING",
+                    userId: user.id,
+                },
+                {
+                    title: `Tarea en progreso de ${user.name}`,
+                    description: "Tarea generada automáticamente",
+                    status: "IN_PROGRESS",
+                    userId: user.id,
+                },
+                {
+                    title: `Tarea completada de ${user.name}`,
+                    description: "Tarea generada automáticamente",
+                    status: "COMPLETED",
+                    userId: user.id,
+                },
+            ],
+        });
+
+        console.log(`Usuario creado: ${user.email}`);
+    }
+
+    console.log("Seed completado con múltiples usuarios y tareas.");
 }
 
 main()
