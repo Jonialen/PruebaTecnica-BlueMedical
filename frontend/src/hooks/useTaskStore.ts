@@ -1,16 +1,10 @@
-import { create } from "zustand";
-import api from "../api/axios";
-import { toast } from "sonner";
+// frontend/src/hooks/useTaskStore.ts
 
-export interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  status: "PENDING" | "IN_PROGRESS" | "COMPLETED";
-  userId: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { create } from "zustand";
+import { toast } from "sonner";
+import { tasksService } from "@services/tasks.service";
+import { extractErrorMessage } from "@utils/helpers";
+import type { Task, CreateTaskData, UpdateTaskData } from "@models/task.types";
 
 interface TaskState {
   tasks: Task[];
@@ -27,99 +21,51 @@ export const useTaskStore = create<TaskState>((set) => ({
   loading: false,
   error: null,
 
-  // --------------------------
-  // GET /api/tasks
-  // --------------------------
   async fetchTasks(status) {
     set({ loading: true, error: null });
     try {
-      const { data } = await api.get("/tasks", { params: status ? { status } : {} });
-
-      if (data.status === "success") {
-        const tasks = data.data?.tasks ?? [];
-        set({ tasks, loading: false });
-      } else {
-        set({ error: data.message || "Error al obtener tareas", loading: false });
-        toast.error(data.message || "Error al obtener tareas");
-      }
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        "No se pudieron cargar las tareas";
+      const tasks = await tasksService.getTasks(status);
+      set({ tasks, loading: false });
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err);
       set({ error: msg, loading: false });
       toast.error(msg);
     }
   },
 
-  // --------------------------
-  // POST /api/tasks
-  // --------------------------
   async addTask(taskData) {
     try {
-      const { data } = await api.post("/tasks", taskData);
-
-      if (data.status === "success") {
-        const newTask = data.data?.task;
-        set((state) => ({
-          tasks: [...state.tasks, newTask],
-        }));
-        toast.success(data.message || "Tarea creada correctamente ✅");
-      } else {
-        toast.error(data.message || "Error al crear la tarea");
-      }
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        "No se pudo crear la tarea";
-      toast.error(msg);
+      const newTask = await tasksService.createTask(taskData as CreateTaskData);
+      set((state) => ({
+        tasks: [...state.tasks, newTask],
+      }));
+      toast.success("Tarea creada correctamente");
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err));
     }
   },
 
-  // --------------------------
-  // PUT /api/tasks/:id
-  // --------------------------
   async updateTask(id, taskData) {
     try {
-      const { data } = await api.put(`/tasks/${id}`, taskData);
-
-      if (data.status === "success") {
-        const updatedTask = data.data?.task;
-        set((state) => ({
-          tasks: state.tasks.map((t) => (t.id === id ? updatedTask : t)),
-        }));
-        toast.success(data.message || "Tarea actualizada ✏️");
-      } else {
-        toast.error(data.message || "Error al actualizar la tarea");
-      }
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        "No se pudo actualizar la tarea";
-      toast.error(msg);
+      const updatedTask = await tasksService.updateTask(id, taskData as UpdateTaskData);
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === id ? updatedTask : t)),
+      }));
+      toast.success("Tarea actualizada");
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err));
     }
   },
 
-  // --------------------------
-  // DELETE /api/tasks/:id
-  // --------------------------
   async deleteTask(id) {
     try {
-      const { data } = await api.delete(`/tasks/${id}`);
-
-      if (data.status === "success") {
-        set((state) => ({
-          tasks: state.tasks.filter((t) => t.id !== id),
-        }));
-        toast.success(data.message || "Tarea eliminada 🗑️");
-      } else {
-        toast.error(data.message || "Error al eliminar la tarea");
-      }
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        "No se pudo eliminar la tarea";
-      toast.error(msg);
+      await tasksService.deleteTask(id);
+      set((state) => ({
+        tasks: state.tasks.filter((t) => t.id !== id),
+      }));
+      toast.success("Tarea eliminada");
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err));
     }
   },
 }));

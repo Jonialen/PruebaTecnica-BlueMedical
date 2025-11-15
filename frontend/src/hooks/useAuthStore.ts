@@ -1,12 +1,9 @@
+// frontend/src/hooks/useAuthStore.ts
 import { create } from "zustand";
-import api from "../api/axios";
 import { toast } from "sonner";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+import { authService } from "@services/auth.service";
+import { extractErrorMessage } from "@utils/helpers";
+import type { User } from "@models/auth.types";
 
 interface AuthState {
   user: User | null;
@@ -20,76 +17,60 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: localStorage.getItem("token"),
+  token: authService.getStoredToken(),
   loading: false,
   error: null,
 
-  // --- LOGIN ---
   async login(email, password) {
     set({ loading: true, error: null });
     try {
-      const { data } = await api.post("/login", { email, password });
+      const response = await authService.login({ email, password });
 
-      // Casos del backend (status: success | error)
-      if (data.status === "success") {
-        const { token, user } = data.data;
-        localStorage.setItem("token", token);
+      if (response.status === "success") {
+        const { token, user } = response.data;
+        authService.setStoredToken(token);
         set({ token, user, loading: false });
-        toast.success(data.message || "Inicio de sesión exitoso ✨");
+        toast.success(response.message || "Inicio de sesión exitoso ✨");
         return true;
       }
 
-      // Caso manejado: status === "error"
-      set({ error: data.message, loading: false });
-      toast.error(data.message || "Error al iniciar sesión");
+      set({ error: response.message, loading: false });
+      toast.error(response.message || "Error al iniciar sesión");
       return false;
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        "No se pudo iniciar sesión";
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err);
       set({ error: msg, loading: false });
       toast.error(msg);
       return false;
     }
   },
 
-  // --- REGISTER ---
   async register(name, email, password) {
     set({ loading: true, error: null });
     try {
-      const { data } = await api.post("/register", {
-        name,
-        email,
-        password,
-      });
+      const response = await authService.register({ name, email, password });
 
-      if (data.status === "success") {
-        const { user, token } = data.data;
-        localStorage.setItem("token", token);
+      if (response.status === "success") {
+        const { user, token } = response.data;
+        authService.setStoredToken(token);
         set({ token, user, loading: false });
-        toast.success(data.message || "Registro exitoso");
+        toast.success(response.message || "Registro exitoso");
         return true;
       }
 
-      // Respuesta con status: "error"
-      set({ error: data.message, loading: false });
-      toast.error(data.message || "Error al registrar usuario");
+      set({ error: response.message, loading: false });
+      toast.error(response.message || "Error al registrar usuario");
       return false;
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        "No se pudo registrar usuario";
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err);
       set({ error: msg, loading: false });
       toast.error(msg);
       return false;
     }
   },
 
-  // --- LOGOUT ---
   logout() {
-    localStorage.removeItem("token");
+    authService.logout();
     set({ user: null, token: null });
     toast.info("Sesión cerrada");
   },
