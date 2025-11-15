@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         const { token, user } = response.data;
         authService.setStoredToken(token);
         set({ token, user, loading: false });
-        toast.success(response.message || "Inicio de sesión exitoso ✨");
+        toast.success(response.message || "Inicio de sesión exitoso");
         return true;
       }
 
