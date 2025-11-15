@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Save, Plus } from "lucide-react";
-import type { Task } from "@hooks/useTaskStore";
+import type { Task } from "@models/task.types";
+import { isValidTaskTitle } from "@utils/validators";
 import { Button } from "./ui/Button";
 
 interface Props {
@@ -12,10 +13,18 @@ interface Props {
 export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
     const [title, setTitle] = useState(task?.title || "");
     const [description, setDescription] = useState(task?.description || "");
+    const [error, setError] = useState<string | null>(null);
     const isEditing = !!task;
 
     const handleSave = () => {
-        onSave({ title, description });
+        // ✅ VALIDAR ANTES DE GUARDAR
+        if (!isValidTaskTitle(title)) {
+            setError("El título debe tener entre 1 y 255 caracteres");
+            return;
+        }
+
+        setError(null);
+        onSave({ title, description: description || null });
     };
 
     return (
@@ -39,9 +48,13 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                     <label className="text-sm font-medium">Título</label>
                     <input
                         value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        onChange={(e) => {
+                            setTitle(e.target.value);
+                            setError(null);
+                        }}
                         placeholder="Título de la tarea"
                         className="border rounded p-2 focus:outline-none focus:ring focus:ring-blue-100"
+                        maxLength={255}
                     />
 
                     <label className="text-sm font-medium mt-2">Descripción</label>
@@ -52,6 +65,10 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                         placeholder="Detalles opcionales"
                         className="border rounded p-2 focus:outline-none focus:ring focus:ring-blue-100"
                     />
+
+                    {error && (
+                        <p className="text-sm text-red-500">{error}</p>
+                    )}
                 </div>
 
                 {/* Acciones */}
