@@ -1,6 +1,4 @@
-# Multi-stage build para optimización
-
-# Stage 1: Build
+# ---------- Stage 1: Build ----------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -8,22 +6,23 @@ WORKDIR /app
 # Activar pnpm
 RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 
-# Copiar package.json y lockfile
+# Copiar archivos para dependencias
 COPY package.json pnpm-lock.yaml ./
 
-# Instalar dependencias
+# Instalar todas las dependencias
 RUN pnpm install --frozen-lockfile
 
-# Copiar el resto del código
+# Copiar resto del proyecto
 COPY . .
 
-# Generar Prisma Client
-RUN npx prisma generate
+# Generar Prisma client
+RUN pnpm prisma generate
 
-# Compilar TypeScript
+# Compilar TS
 RUN pnpm build
 
-# Stage 2: Runtime
+
+# ---------- Stage 2: Runtime ----------
 FROM node:20-alpine AS runtime
 
 WORKDIR /app
@@ -31,26 +30,18 @@ WORKDIR /app
 # Activar pnpm
 RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 
-# Copiar package.json y lockfile para instalar solo prod dependencies
-COPY package.json pnpm-lock.yaml ./
-
-RUN pnpm install --prod --frozen-lockfile
-
-# Copiar dist y node_modules
-COPY --from=builder /app/dist ./dist
+# Copiar SOLO node_modules (ya contiene prisma client)
 COPY --from=builder /app/node_modules ./node_modules
-COPY prisma ./prisma
 
-# Variables de entorno
+# Copiar dist compilado
+COPY --from=builder /app/dist ./dist
+
+# Copiar pila Prisma (schema y migraciones)
+COPY --from=builder /app/prisma ./prisma
+
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# Exponer puerto
 EXPOSE 3001
 
-# Health check opcional
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
-  CMD node -e "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-# Comando de inicio
 CMD ["node", "dist/index.js"]

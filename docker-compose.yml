@@ -14,17 +14,7 @@ services:
       - db_data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-p${MYSQL_ROOT_PASSWORD}",
-        ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,7 +32,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}"
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${BACKEND_PORT}
@@ -57,28 +47,29 @@ services:
           "CMD",
           "node",
           "-e",
-          "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})",
+          "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
         ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   container_name: frontend_app
-  #   restart: always
-  #   depends_on:
-  #     - backend
-  #   environment:
-  #     VITE_API_URL: http://backend_api:3001
-  #     NODE_ENV: ${NODE_ENV:-production}
-  #   ports:
-  #     - "5173:5173"
-  #   networks:
-  #     - app-network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_APP_NAME: ${VITE_APP_NAME}
+        VITE_API_TIMEOUT: ${VITE_API_TIMEOUT}
+    container_name: frontend_app
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "8000:80"
+    networks:
+      - app-network
 
 volumes:
   db_data:
