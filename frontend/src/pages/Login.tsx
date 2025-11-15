@@ -107,7 +107,7 @@ export default function Login() {
 
                 {/* Footer */}
                 <div className="!mt-8 text-center">
-                    <p className="!mb-4 text-base" style={{ color: 'var(--text-secondary)' }}>
+                    <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
                         ¿No tienes una cuenta?
                     </p>
                     <Link to="/register">

@@ -136,7 +136,7 @@ export default function Register() {
                 {/* Footer */}
                 <div className="!mt-8 text-center">
                     <p
-                        className="!mb-4 text-base"
+                        className="text-base"
                         style={{ color: 'var(--text-secondary)' }}
                     >
                         ¿Ya tienes una cuenta?
