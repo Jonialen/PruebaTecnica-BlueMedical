@@ -9,12 +9,15 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = ({ label, error, icon, className, ...props }: Props) => (
     <div className="flex flex-col gap-2.5">
-        <label className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <label className="text-sm font-semibold text-left !pl-2 !pt-2" style={{ color: 'var(--text-primary)' }}>
             {label}
         </label>
         <div className="relative">
             {icon && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" style={{ color: 'var(--text-tertiary)' }}>
+                <div
+                    className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors z-10"
+                    style={{ color: 'var(--text-tertiary)' }}
+                >
                     {icon}
                 </div>
             )}
@@ -25,8 +28,8 @@ export const Input = ({ label, error, icon, className, ...props }: Props) => (
                     "border-2",
                     "focus:outline-none focus:ring-4",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
-                    icon ? "pl-14 pr-4" : "px-4",
                     "placeholder:text-[var(--text-tertiary)]",
+                    icon ? "!pl-9 !pr-4" : "!px-4",
                     className
                 )}
                 style={{
@@ -45,7 +48,6 @@ export const Input = ({ label, error, icon, className, ...props }: Props) => (
                     e.target.style.boxShadow = 'none';
                 }}
             />
-
         </div>
         {error && (
             <p className="text-xs text-red-500 dark:text-red-400 animate-slide-down flex items-center gap-1.5 mt-1">

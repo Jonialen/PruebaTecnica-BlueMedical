@@ -46,9 +46,9 @@ export const Button = ({
     };
 
     const sizes = {
-        sm: "text-xs px-4 py-2.5 rounded-lg",
-        md: "text-sm px-6 py-3 rounded-xl",
-        lg: "text-base px-7 py-4 rounded-xl",
+        sm: "text-xs !px-4 !py-2.5 rounded-lg",
+        md: "text-sm !px-3 !py-3 !my-2.5 rounded-xl",
+        lg: "text-base !px-3 !py-2 !mt-3 rounded-xl",
     };
 
     return (

@@ -33,33 +33,47 @@ export default function Register() {
     const displayError = validationError || authError;
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 transition-colors duration-300" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div
+            className="min-h-screen flex items-center justify-center !p-6 transition-colors duration-300"
+            style={{ backgroundColor: 'var(--bg-primary)' }}
+        >
             <div className="fixed top-8 right-8 z-10">
                 <ThemeToggle />
             </div>
 
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-lg">
                 {/* Header */}
-                <div className="text-center mb-12">
-                    <div className="inline-flex p-5 rounded-2xl mb-6 shadow-lg" style={{
-                        backgroundColor: 'var(--brand-500)'
-                    }}>
+                <div className="text-center !mb-4">
+                    <div
+                        className="inline-flex !p-5 rounded-2xl !mb-6 shadow-lg"
+                        style={{ backgroundColor: 'var(--brand-500)' }}
+                    >
                         <CheckSquare className="w-12 h-12 text-white" strokeWidth={2.5} />
                     </div>
-                    <h1 className="text-4xl font-bold mb-4 tracking-tight" style={{ color: 'var(--text-primary)' }}>
+
+                    <h1
+                        className="text-4xl font-bold tracking-tight"
+                        style={{ color: 'var(--text-primary)' }}
+                    >
                         Crea tu cuenta
                     </h1>
-                    <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+                    <p
+                        className="text-lg"
+                        style={{ color: 'var(--text-secondary)' }}
+                    >
                         Comienza a organizar tus tareas hoy
                     </p>
                 </div>
 
                 {/* Form Card */}
-                <div className="rounded-2xl border-2 p-10 shadow-xl" style={{
-                    backgroundColor: 'var(--bg-secondary)',
-                    borderColor: 'var(--border-primary)'
-                }}>
-                    <form onSubmit={handleSubmit} className="space-y-7">
+                <div
+                    className="rounded-2xl border-2 !px-10 !py-8.5 shadow-xl"
+                    style={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        borderColor: 'var(--border-primary)'
+                    }}
+                >
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <Input
                             label="Nombre completo"
                             type="text"
@@ -100,28 +114,34 @@ export default function Register() {
                         />
 
                         {displayError && (
-                            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl animate-slide-down">
+                            <div className="!p-4 !mt-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl animate-slide-down">
                                 <p className="text-sm text-red-600 dark:text-red-400">{displayError}</p>
                             </div>
                         )}
 
-                        <Button
-                            type="submit"
-                            loading={loading}
-                            size="lg"
-                            className="w-full mt-10"
-                            icon={<ArrowRight className="w-5 h-5" />}
-                        >
-                            Crear mi cuenta
-                        </Button>
+                        <div className="!pt-4">
+                            <Button
+                                type="submit"
+                                loading={loading}
+                                size="lg"
+                                className="w-full"
+                                icon={<ArrowRight className="w-5 h-5" />}
+                            >
+                                Crear mi cuenta
+                            </Button>
+                        </div>
                     </form>
                 </div>
 
                 {/* Footer */}
-                <div className="mt-10 text-center">
-                    <p className="mb-5 text-base" style={{ color: 'var(--text-secondary)' }}>
+                <div className="!mt-8 text-center">
+                    <p
+                        className="!mb-4 text-base"
+                        style={{ color: 'var(--text-secondary)' }}
+                    >
                         ¿Ya tienes una cuenta?
                     </p>
+
                     <Link to="/login">
                         <Button variant="ghost" size="lg" className="w-full">
                             Iniciar sesión

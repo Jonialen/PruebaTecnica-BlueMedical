@@ -93,7 +93,7 @@ export const TaskCard = ({ task, onDelete, onUpdate, onClick }: TaskCardProps) =
         >
             <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: colors.border }} />
 
-            <div className="relative p-7 flex flex-col gap-5">
+            <div className="relative !p-7 flex flex-col gap-5">
                 {/* Header with status button */}
                 <div className="flex items-start gap-5">
                     <button
@@ -112,7 +112,7 @@ export const TaskCard = ({ task, onDelete, onUpdate, onClick }: TaskCardProps) =
                     </button>
 
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg mb-2 text-balance transition-colors duration-200" style={{ color: 'var(--text-primary)' }}>
+                        <h3 className="font-bold text-lg !mb-2 text-balance transition-colors duration-200" style={{ color: 'var(--text-primary)' }}>
                             {title}
                         </h3>
 
@@ -125,9 +125,9 @@ export const TaskCard = ({ task, onDelete, onUpdate, onClick }: TaskCardProps) =
                 </div>
 
                 {/* Footer with metadata and actions */}
-                <div className="flex items-center justify-between gap-4 pt-3 border-t" style={{ borderColor: 'var(--border-primary)' }}>
+                <div className="flex items-center justify-between gap-4 !pt-3 border-t" style={{ borderColor: 'var(--border-primary)' }}>
                     <div className="flex items-center gap-3 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border" style={{
+                        <span className="inline-flex items-center gap-1.5 !px-3 !py-1.5 rounded-lg text-xs font-semibold border" style={{
                             backgroundColor: colors.bg,
                             color: colors.text,
                             borderColor: colors.border
@@ -145,7 +145,7 @@ export const TaskCard = ({ task, onDelete, onUpdate, onClick }: TaskCardProps) =
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                         <button
                             onClick={handleDelete}
-                            className="p-2.5 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                            className="!p-2.5 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                             style={{ color: 'var(--text-tertiary)' }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor = '#FEE2E2';

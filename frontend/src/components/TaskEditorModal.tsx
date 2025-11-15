@@ -4,6 +4,7 @@ import type { Task } from "@models/task.types";
 import { isValidTaskTitle } from "@utils/validators";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import clsx from "clsx";
 
 interface Props {
     task: Task | null;
@@ -35,14 +36,14 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
+        <div className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
             <div className="rounded-2xl w-full max-w-lg relative animate-scale-in border-2" style={{
                 backgroundColor: 'var(--bg-secondary)',
                 borderColor: 'var(--border-primary)',
                 boxShadow: 'var(--shadow-lg)'
             }}>
                 {/* Header */}
-                <div className="flex justify-between items-center p-7 border-b-2" style={{ borderColor: 'var(--border-primary)' }}>
+                <div className="flex justify-between items-center !p-4 border-b-2" style={{ borderColor: 'var(--border-primary)' }}>
                     <div className="flex items-center gap-4">
                         <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{
                             backgroundColor: 'var(--brand-500)',
@@ -61,7 +62,7 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
 
                     <button
                         onClick={onClose}
-                        className="p-2.5 rounded-lg transition-all duration-200"
+                        className="!p-2.5 rounded-lg transition-all duration-200"
                         style={{ color: 'var(--text-secondary)' }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = '#FEE2E2';
@@ -78,7 +79,7 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                 </div>
 
                 {/* Body */}
-                <div className="p-7 space-y-6">
+                <div className="!p-3 space-y-6">
                     <Input
                         label="Título"
                         value={title}
@@ -92,8 +93,8 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                         icon={<Type className="w-4 h-4" />}
                     />
 
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                    <div className="flex flex-col gap-2 !mt-2">
+                        <label className="text-sm font-medium text-left !pl-2 !p-2" style={{ color: 'var(--text-primary)' }}>
                             Descripción
                         </label>
                         <div className="relative">
@@ -102,14 +103,32 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Agrega detalles sobre la tarea (opcional)"
-                                className="w-full px-4 py-3 rounded-lg transition-all duration-200 bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark border-2 border-border-light dark:border-border-dark placeholder:text-text-tertiary-light dark:placeholder:text-text-tertiary-dark focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 hover:border-brand-300 dark:hover:border-brand-400 resize-none"
+                                className={clsx(
+                                    "w-full rounded-xl transition-all duration-200 border-2 resize-none",
+                                    "focus:outline-none focus:ring-4",
+                                    "!px-4 !py-3",
+                                    "placeholder:text-[var(--text-tertiary)]"
+                                )}
+                                style={{
+                                    backgroundColor: 'var(--bg-secondary)',
+                                    borderColor: 'var(--border-primary)',
+                                    color: 'var(--text-primary)',
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = 'var(--brand-500)';
+                                    e.target.style.boxShadow = '0 0 0 4px rgba(242, 131, 34, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = 'var(--border-primary)';
+                                    e.target.style.boxShadow = 'none';
+                                }}
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-4 p-7 border-t-2 rounded-b-2xl" style={{
+                <div className="flex justify-end gap-4 !px-2 border-t-2 rounded-b-2xl" style={{
                     borderColor: 'var(--border-primary)',
                     backgroundColor: 'var(--bg-tertiary)'
                 }}>

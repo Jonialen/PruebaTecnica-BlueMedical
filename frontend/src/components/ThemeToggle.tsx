@@ -15,7 +15,7 @@ export const ThemeToggle = () => {
             title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
         >
             {/* Background icons */}
-            <div className="absolute inset-0 flex items-center justify-between px-2">
+            <div className="absolute inset-0 flex items-center justify-between !px-2">
                 <Sun className={`w-3.5 h-3.5 transition-opacity duration-300 ${isDark ? 'opacity-40' : 'opacity-0'} text-white`} />
                 <Moon className={`w-3.5 h-3.5 transition-opacity duration-300 ${isDark ? 'opacity-0' : 'opacity-40'} text-white`} />
             </div>

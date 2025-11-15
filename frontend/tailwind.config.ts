@@ -75,6 +75,10 @@ export default {
         },
       },
       
+      spacing: {
+        '11': '2.75rem',
+      },
+      
       animation: {
         "fade-in": "fadeIn 0.3s ease-in-out",
         "slide-up": "slideUp 0.3s ease-out",
@@ -110,4 +114,5 @@ export default {
   },
 
   plugins: [],
+  
 } satisfies Config;

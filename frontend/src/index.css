@@ -14,6 +14,7 @@
   --brand-600: #D96E1A;
   --brand-400: #F2A81D;
   --brand-300: #F2CEA2;
+  --brand-50: #FFF8F3;
   
   /* Light Mode */
   --bg-primary: #FAFAFA;
@@ -72,10 +73,15 @@
   --green-border: #14532D;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 html,
@@ -90,6 +96,8 @@ body {
   color: var(--text-primary);
   transition: background-color 200ms, color 200ms;
 }
+
+/* NO aplicar estilos a input, button, etc. que puedan interferir con Tailwind */
 
 /* Cleaner scrollbar */
 ::-webkit-scrollbar {
@@ -119,34 +127,9 @@ body {
   scrollbar-width: none;
 }
 
-/* Minimal animations only */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-/* Clean focus styles */
-*:focus-visible {
-  outline: 2px solid var(--brand-500); /* Updated from --color-brand-500 */
+/* Clean focus styles - solo para elementos sin clase específica */
+*:focus-visible:not([class*="focus:"]) {
+  outline: 2px solid var(--brand-500);
   outline-offset: 2px;
 }
 
