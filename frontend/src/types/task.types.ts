@@ -19,7 +19,7 @@ export interface CreateTaskData {
 
 export interface UpdateTaskData {
   title?: string;
-  description?: string;
+  description?: string | null;
   status?: TaskStatus;
 }
 

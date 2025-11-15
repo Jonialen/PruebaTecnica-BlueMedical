@@ -5,7 +5,7 @@ export interface ApiError {
   errors?: Array<{
     field?: string;
     message: string;
-    value?: any;
+    value?: unknown;
   }>;
 }
 

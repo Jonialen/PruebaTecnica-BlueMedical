@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { useTaskStore } from "../hooks/useTaskStore";
-import { useAuthStore } from "../hooks/useAuthStore";
-import { TaskCard } from "../components/TaskCard";
-import { TaskEditorModal } from "../components/TaskEditorModal";
+import { useTaskStore } from "@hooks/useTaskStore";
+import { useAuthStore } from "@hooks/useAuthStore";
+import { TaskCard } from "@components/TaskCard";
+import { TaskEditorModal } from "@components/TaskEditorModal";
 import { Search, Plus, LogOut } from "lucide-react";
-import type { Task } from "../hooks/useTaskStore";
+import type { Task } from "@models/task.types";
 
 export default function Tasks() {
     const { tasks, fetchTasks, addTask, updateTask, deleteTask, loading } =
         useTaskStore();
-    const { logout } = useAuthStore(); // 👈 trae el logout del store
+    const { logout } = useAuthStore();
     const [filter, setFilter] = useState<
         "ALL" | "PENDING" | "IN_PROGRESS" | "COMPLETED"
     >("ALL");
@@ -19,7 +19,7 @@ export default function Tasks() {
 
     useEffect(() => {
         fetchTasks(filter !== "ALL" ? filter : undefined);
-    }, [filter]);
+    }, [filter, fetchTasks]);
 
     const filteredTasks = tasks.filter(
         (t) =>
@@ -37,10 +37,8 @@ export default function Tasks() {
         setSelectedTask(null);
     };
 
-    // 🔹 Cerrar sesión
     const handleLogout = () => {
         logout();
-        // opcional: redirigir manualmente al login
         window.location.href = "/login";
     };
 
@@ -48,7 +46,6 @@ export default function Tasks() {
         <div className="min-h-screen flex flex-col bg-gray-50">
             {/* HEADER */}
             <header className="sticky top-0 z-10 bg-white border-b shadow-sm p-3 flex flex-col gap-3">
-                {/* 🔍 Barra de búsqueda */}
                 <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
@@ -58,7 +55,6 @@ export default function Tasks() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    {/* 🚪 Botón logout a la derecha de la barra */}
                     <button
                         onClick={handleLogout}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-600 transition"
@@ -68,7 +64,6 @@ export default function Tasks() {
                     </button>
                 </div>
 
-                {/* 🎯 Filtros */}
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
                     {[
                         ["ALL", "Todas", "bg-gray-700", "bg-gray-200 text-gray-700"],
@@ -78,10 +73,10 @@ export default function Tasks() {
                     ].map(([key, label, activeColor, inactiveColor]) => (
                         <button
                             key={key}
-                            onClick={() => setFilter(key as any)}
+                            onClick={() => setFilter(key as typeof filter)}
                             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${filter === key
-                                    ? `${activeColor} text-white`
-                                    : `${inactiveColor} hover:opacity-80`
+                                ? `${activeColor} text-white`
+                                : `${inactiveColor} hover:opacity-80`
                                 }`}
                         >
                             {label}
