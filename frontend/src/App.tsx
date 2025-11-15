@@ -1,57 +1,15 @@
-// src/App.tsx
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from '@store/authStore';
-import ProtectedRoute from '@components/layout/ProtectedRoute';
-import Login from '@pages/Login';
-import Register from '@pages/Register';
-import Tasks from '@pages/Tasks';
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import { AppRouter } from "./router/AppRouter";
+import './App.css'
+import { Toaster } from "sonner";
 
-function App() {
-  const { initAuth, isAuthenticated } = useAuthStore();
-
-  useEffect(() => {
-    initAuth();
-  }, [initAuth]);
-
+export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ? <Navigate to="/tasks" replace /> : <Login />
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            isAuthenticated ? <Navigate to="/tasks" replace /> : <Register />
-          }
-        />
-
-        {/* Protected Routes */}
-        <Route
-          path="/tasks"
-          element={
-            <ProtectedRoute>
-              <Tasks />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Default Redirect */}
-        <Route
-          path="/"
-          element={<Navigate to={isAuthenticated ? "/tasks" : "/login"} replace />}
-        />
-
-        {/* 404 */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="font-sans text-gray-900">
+      <AppRouter />
+      <Toaster position="top-right" richColors />
+    </div>
   );
 }
-
-export default App;

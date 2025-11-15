@@ -1,134 +1,87 @@
-// src/pages/Login.tsx
-import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuthStore } from '@store/authStore';
-import Input from '@components/common/Input';
-import Button from '@components/common/Button';
-import { Alert } from '@components/common/Spinner';
-import { LogIn } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuthStore } from "@hooks/useAuthStore";
+import { Button } from "@components/ui/Button";
+import { Input } from "@components/ui/Input";
+import { Loader2, CheckSquare } from "lucide-react";
 
-const loginSchema = z.object({
-    email: z.email('Email inválido'),
-    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-const Login = () => {
+export default function Login() {
     const navigate = useNavigate();
-    const { login, isAuthenticated, error, clearError } = useAuthStore();
+    const { login, loading, error } = useAuthStore();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<LoginFormData>({
-        resolver: zodResolver(loginSchema),
-    });
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/tasks', { replace: true });
-        }
-    }, [isAuthenticated, navigate]);
-
-    useEffect(() => {
-        clearError();
-    }, []);
-
-    const onSubmit = async (data: LoginFormData) => {
-        try {
-            await login(data);
-        } catch (err) {
-            // Error manejado en el store
-        }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const ok = await login(email, password);
+        if (ok) navigate("/tasks");
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center px-4">
-            <div className="max-w-md w-full">
-                {/* Card */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-                            <LogIn className="h-8 w-8 text-primary-600" />
-                        </div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            Iniciar Sesión
-                        </h1>
-                        <p className="text-gray-600">
-                            Bienvenido al Gestor de Tareas
-                        </p>
-                    </div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">
+            <div className="flex w-full max-w-4xl bg-white rounded-lg shadow-md overflow-hidden">
+                {/* Lado Izquierdo: Branding */}
+                <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-blue-600 text-white p-10">
+                    <CheckSquare className="w-12 h-12 mb-4" />
+                    <h1 className="text-3xl font-semibold">Gestor de tareas</h1>
+                    <p className="text-sm opacity-80 mt-2 text-center">
+                        Organiza tu día y mantén el control de tus pendientes.
+                    </p>
+                </div>
 
-                    {/* Error Alert */}
-                    {error && (
-                        <div className="mb-6">
-                            <Alert type="error" message={error} onClose={clearError} />
-                        </div>
-                    )}
+                {/* Lado Derecho: Formulario */}
+                <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
+                    <h2 className="text-2xl font-semibold text-gray-800 text-center mb-2">
+                        Iniciar sesión
+                    </h2>
+                    <p className="text-sm text-gray-500 text-center mb-6">
+                        Ingresa tus credenciales para continuar
+                    </p>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-4 w-full max-w-sm mx-auto"
+                    >
                         <Input
+                            label="Correo electrónico"
                             type="email"
-                            label="Email"
-                            placeholder="tu@email.com"
-                            error={errors.email?.message}
-                            {...register('email')}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
-                            autoFocus
                         />
 
                         <Input
-                            type="password"
                             label="Contraseña"
-                            placeholder="••••••••"
-                            error={errors.password?.message}
-                            {...register('password')}
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
 
-                        <Button
-                            type="submit"
-                            fullWidth
-                            isLoading={isSubmitting}
-                        >
-                            Iniciar Sesión
-                        </Button>
-                    </form>
+                        {error && (
+                            <p className="text-center text-sm text-red-500">{error}</p>
+                        )}
 
-                    {/* Footer */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            ¿No tienes una cuenta?{' '}
-                            <Link
-                                to="/register"
-                                className="font-medium text-primary-600 hover:text-primary-700"
-                            >
-                                Regístrate aquí
+                        <Button type="submit" disabled={loading}>
+                            {loading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Entrando...
+                                </span>
+                            ) : (
+                                "Entrar"
+                            )}
+                        </Button>
+
+                        <p className="text-sm text-center text-gray-600">
+                            ¿No tienes cuenta?{" "}
+                            <Link to="/register" className="text-blue-600 hover:underline">
+                                Regístrate
                             </Link>
                         </p>
-                    </div>
-
-                    {/* Demo credentials */}
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                        <p className="text-xs text-blue-800 font-medium mb-1">
-                            Credenciales de prueba:
-                        </p>
-                        <p className="text-xs text-blue-700">
-                            Email: demo@roble.com<br />
-                            Contraseña: 123456
-                        </p>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
     );
-};
-
-export default Login;
+}

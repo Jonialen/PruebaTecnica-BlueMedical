@@ -1,149 +1,97 @@
-// src/pages/Register.tsx
-import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuthStore } from '@store/authStore';
-import Input from '@components/common/Input';
-import Button from '@components/common/Button';
-import { Alert } from '@components/common/Spinner';
-import { UserPlus } from 'lucide-react';
+import { useState } from "react";
+import { useAuthStore } from "../hooks/useAuthStore";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Loader2, CheckSquare } from "lucide-react";
 
-const registerSchema = z.object({
-    name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-    email: z.string().email('Email inválido'),
-    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-    confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmPassword'],
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
-
-const Register = () => {
+export default function Register() {
+    const { register, loading, error } = useAuthStore();
     const navigate = useNavigate();
-    const { register: registerUser, isAuthenticated, error, clearError } = useAuthStore();
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<RegisterFormData>({
-        resolver: zodResolver(registerSchema),
-    });
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/tasks', { replace: true });
-        }
-    }, [isAuthenticated, navigate]);
-
-    useEffect(() => {
-        clearError();
-    }, [clearError]);
-
-    const onSubmit = async (data: RegisterFormData) => {
-        try {
-            await registerUser({
-                name: data.name,
-                email: data.email,
-                password: data.password,
-            });
-        } catch (err) {
-            // Error manejado en el store
-        }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const ok = await register(name, email, password);
+        if (ok) navigate("/tasks");
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center px-4">
-            <div className="max-w-md w-full">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-                            <UserPlus className="h-8 w-8 text-primary-600" />
-                        </div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            Crear Cuenta
-                        </h1>
-                        <p className="text-gray-600">
-                            Únete al Gestor de Tareas
-                        </p>
-                    </div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">
+            <div className="flex w-full max-w-4xl bg-white rounded-lg shadow-md overflow-hidden">
+                {/* Panel azul lado izquierdo (branding) */}
+                <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-blue-600 text-white p-10">
+                    <CheckSquare className="w-12 h-12 mb-4" />
+                    <h1 className="text-3xl font-semibold">Gestor de tareas</h1>
+                    <p className="text-sm opacity-80 mt-2 text-center">
+                        Regístrate para empezar a organizar tus pendientes.
+                    </p>
+                </div>
 
-                    {/* Error Alert */}
-                    {error && (
-                        <div className="mb-6">
-                            <Alert type="error" message={error} onClose={clearError} />
-                        </div>
-                    )}
+                {/* Panel de formulario */}
+                <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
+                    <h2 className="text-2xl font-semibold text-gray-800 text-center mb-2">
+                        Crear cuenta
+                    </h2>
+                    <p className="text-sm text-gray-500 text-center mb-6">
+                        Llena los campos para registrarte
+                    </p>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-4 w-full max-w-sm mx-auto"
+                    >
                         <Input
-                            type="text"
                             label="Nombre completo"
-                            placeholder="Juan Pérez"
-                            error={errors.name?.message}
-                            {...register('name')}
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             required
-                            autoFocus
                         />
 
                         <Input
+                            label="Correo electrónico"
                             type="email"
-                            label="Email"
-                            placeholder="tu@email.com"
-                            error={errors.email?.message}
-                            {...register('email')}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
 
                         <Input
-                            type="password"
                             label="Contraseña"
-                            placeholder="••••••••"
-                            error={errors.password?.message}
-                            {...register('password')}
-                            required
-                        />
-
-                        <Input
                             type="password"
-                            label="Confirmar contraseña"
-                            placeholder="••••••••"
-                            error={errors.confirmPassword?.message}
-                            {...register('confirmPassword')}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
 
-                        <Button
-                            type="submit"
-                            fullWidth
-                            isLoading={isSubmitting}
-                        >
-                            Crear cuenta
-                        </Button>
-                    </form>
+                        {error && (
+                            <p className="text-center text-sm text-red-500">{error}</p>
+                        )}
 
-                    {/* Footer */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            ¿Ya tienes una cuenta?{' '}
-                            <Link
-                                to="/login"
-                                className="font-medium text-primary-600 hover:text-primary-700"
-                            >
-                                Inicia sesión aquí
+                        <Button type="submit" disabled={loading}>
+                            {loading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Registrando...
+                                </span>
+                            ) : (
+                                "Registrarme"
+                            )}
+                        </Button>
+
+                        <p className="text-sm text-center text-gray-600">
+                            ¿Ya tienes cuenta?{" "}
+                            <Link to="/login" className="text-blue-600 hover:underline">
+                                Inicia sesión
                             </Link>
                         </p>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
     );
-};
-
-export default Register;
+}
