@@ -8,8 +8,10 @@ import { ThemeToggle } from "@components/ThemeToggle";
 import { Search, Plus, LogOut, CheckSquare, Loader2 } from 'lucide-react';
 import type { Task } from "@models/task.types";
 import { Button } from "@components/ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export default function Tasks() {
+    const navigate = useNavigate();
     const { tasks, fetchTasks, addTask, updateTask, deleteTask, loading } = useTaskStore();
     const { logout, user } = useAuthStore();
     const [filter, setFilter] = useState<"ALL" | "PENDING" | "IN_PROGRESS" | "COMPLETED">("ALL");
@@ -39,7 +41,7 @@ export default function Tasks() {
 
     const handleLogout = () => {
         logout();
-        window.location.href = "/login";
+        navigate("/login");
     };
 
     const filters = [
@@ -64,8 +66,8 @@ export default function Tasks() {
             }}>
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
                     {/* Top Bar */}
-                    <div className="flex items-center justify-between py-6">
-                        <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-between !pt-2">
+                        <div className="flex items-center gap-4 !px-2">
                             <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--brand-500)' }}>
                                 <CheckSquare className="w-6 h-6 text-white" strokeWidth={2.5} />
                             </div>
@@ -81,7 +83,7 @@ export default function Tasks() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 !px-2">
                             <ThemeToggle />
                             <button
                                 onClick={handleLogout}
@@ -103,13 +105,13 @@ export default function Tasks() {
                     </div>
 
                     {/* Search Bar */}
-                    <div className="pb-8">
+                    <div className="!pt-4">
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: 'var(--text-tertiary)' }} />
                             <input
                                 type="text"
                                 placeholder="Buscar tareas por título o descripción..."
-                                className="w-full pl-12 pr-4 py-4 rounded-xl border-2 transition-all focus:outline-none focus:ring-4"
+                                className="w-full !pl-12 !pr-4 py-4 rounded-xl border-2 transition-all focus:outline-none focus:ring-4"
                                 style={{
                                     backgroundColor: 'var(--bg-secondary)',
                                     borderColor: 'var(--border-primary)',
@@ -129,12 +131,12 @@ export default function Tasks() {
                         </div>
                     </div>
 
-                    <div className="pb-8 flex items-center gap-5 overflow-x-auto scrollbar-none">
+                    <div className="pb-8 flex items-center gap-5 overflow-x-auto scrollbar-none !px-2">
                         {filters.map(({ key, label }) => (
                             <button
                                 key={key}
                                 onClick={() => setFilter(key as typeof filter)}
-                                className="flex-shrink-0 px-7 py-3.5 text-sm font-semibold rounded-xl transition-all duration-200 hover:scale-105 border-2 shadow-sm hover:shadow-md"
+                                className="flex-shrink-0 !px-5 text-sm font-semibold rounded-xl transition-all duration-200 hover:scale-105 border-2 shadow-sm hover:shadow-md"
                                 style={{
                                     backgroundColor: filter === key ? 'var(--brand-500)' : 'var(--bg-secondary)',
                                     color: filter === key ? '#FFFFFF' : 'var(--text-primary)',
@@ -159,9 +161,9 @@ export default function Tasks() {
             </header>
 
             {taskCount > 0 && (
-                <div className="max-w-7xl mx-auto w-full px-6 sm:px-8 lg:px-10 mt-12">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        <div className="p-6 rounded-2xl border-2 transition-all duration-200 hover:scale-105" style={{
+                <div className="max-w-7xl mx-auto w-full px-6 sm:px-8 lg:px-10 !mt-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 m">
+                        <div className="p-6 rounded-2xl border-2 transition-all duration-200 hover:scale-105 my-2" style={{
                             backgroundColor: 'var(--bg-secondary)',
                             borderColor: 'var(--border-primary)',
                             boxShadow: 'var(--shadow-sm)'
@@ -194,16 +196,16 @@ export default function Tasks() {
                             boxShadow: 'var(--shadow-sm)'
                         }}>
                             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--yellow-text)' }}>Pendientes</p>
-                            <p className="text-4xl font-black mt-2" style={{ color: 'var(--yellow-text)' }}>{pendingCount}</p>
+                            <p className="text-4xl font-black !mt-2" style={{ color: 'var(--yellow-text)' }}>{pendingCount}</p>
                         </div>
                     </div>
 
                     {/* Progress bar */}
-                    <div className="mt-10 p-8 rounded-2xl border-2 shadow-sm" style={{
+                    <div className="!my-3 !p-2 rounded-2xl border-2 shadow-sm" style={{
                         backgroundColor: 'var(--bg-secondary)',
                         borderColor: 'var(--border-primary)'
                     }}>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-between mb-3 ">
                             <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Progreso General</span>
                             <span className="text-2xl font-black" style={{ color: 'var(--brand-500)' }}>{completionRate}%</span>
                         </div>
@@ -224,23 +226,23 @@ export default function Tasks() {
             <main className="flex-1 overflow-y-auto p-8 sm:p-10 lg:p-12">
                 <div className="max-w-7xl mx-auto">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20">
+                        <div className="flex flex-col items-center justify-center !py-5">
                             <Loader2 className="w-16 h-16 animate-spin" style={{ color: 'var(--brand-500)' }} />
                             <p className="mt-6 font-medium" style={{ color: 'var(--text-secondary)' }}>
                                 Cargando tus tareas...
                             </p>
                         </div>
                     ) : filteredTasks.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20">
+                        <div className="flex flex-col items-center justify-center !py-5">
                             <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6" style={{
                                 backgroundColor: 'var(--bg-tertiary)'
                             }}>
                                 <CheckSquare className="w-12 h-12" style={{ color: 'var(--text-tertiary)' }} />
                             </div>
-                            <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                            <h3 className="text-xl font-bold !mb-2" style={{ color: 'var(--text-primary)' }}>
                                 {search ? "No se encontraron tareas" : "¡Comienza tu día productivo!"}
                             </h3>
-                            <p className="text-center max-w-md mb-8 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                            <p className="text-center max-w-md leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                                 {search
                                     ? "Intenta con otro término de búsqueda"
                                     : "Crea tu primera tarea y comienza a organizarte"}

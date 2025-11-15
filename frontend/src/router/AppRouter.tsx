@@ -2,9 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "@pages/Login";
 import Tasks from "@pages/Tasks";
 import Register from "@pages/Register";
+import { useAuthStore } from "@hooks/useAuthStore";
 
 export const AppRouter = () => {
-    const token = localStorage.getItem("token");
+    const { token } = useAuthStore();
     return (
         <BrowserRouter>
             <Routes>
