@@ -1,0 +1,55 @@
+# ---------- Stage 1: Build ----------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Activar pnpm
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
+
+# Copiar archivos para dependencias
+COPY package.json pnpm-lock.yaml ./
+
+# Instalar todas las dependencias
+RUN pnpm install --frozen-lockfile
+
+# Copiar resto del proyecto
+COPY . .
+
+# Generar Prisma client
+RUN pnpm prisma generate
+
+# Compilar TS
+RUN pnpm build
+
+
+# ---------- Stage 2: Runtime con Migraciones ----------
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+# Activar pnpm
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
+
+# Copiar node_modules (ya contiene prisma client)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copiar dist compilado
+COPY --from=builder /app/dist ./dist
+
+# Copiar archivos de Prisma (schema y migraciones)
+COPY --from=builder /app/prisma ./prisma
+
+# Copiar package.json para scripts
+COPY --from=builder /app/package.json ./package.json
+
+ENV NODE_ENV=production
+ENV PORT=3001
+
+EXPOSE 3001
+
+# Script de inicio con migraciones automáticas
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node", "dist/src/index.js"]
