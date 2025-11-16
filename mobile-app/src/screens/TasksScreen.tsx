@@ -298,8 +298,13 @@ const TasksScreen = () => {
         inProgress: filteredTasks.filter((t) => t.status === 'IN_PROGRESS').length,
     };
 
+    const ScreenWrapper = Platform.OS === "web" ? View : SafeAreaView;
+
     return (
-        <SafeAreaView style={commonStyles.container} edges={['top']}>
+        <ScreenWrapper
+            style={commonStyles.container}
+            {...(Platform.OS !== "web" && { edges: ["top"] })}
+        >
             <TasksHeader
                 userName={user?.name}
                 search={search}
@@ -333,6 +338,7 @@ const TasksScreen = () => {
             ) : (
                 <FlatList
                     data={filteredTasks}
+                    style={{ flex: 1 }}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => (
                         <TaskCard
@@ -359,7 +365,7 @@ const TasksScreen = () => {
                 onClose={closeModal}
                 onSave={handleSaveTask}
             />
-        </SafeAreaView>
+        </ScreenWrapper>
     );
 };
 

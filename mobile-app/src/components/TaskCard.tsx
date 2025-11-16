@@ -52,15 +52,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     };
 
     const handleDelete = () => {
-        Alert.alert(
-            'Eliminar tarea',
-            '¿Estás seguro de eliminar esta tarea?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Eliminar', style: 'destructive', onPress: onDelete },
-            ]
-        );
+        if (Platform.OS === "web") {
+            const confirmed = window.confirm("¿Estás seguro de eliminar esta tarea?");
+            if (confirmed) onDelete();
+        } else {
+            Alert.alert(
+                "Eliminar tarea",
+                "¿Estás seguro de eliminar esta tarea?",
+                [
+                    { text: "Cancelar", style: "cancel" },
+                    { text: "Eliminar", style: "destructive", onPress: onDelete },
+                ]
+            );
+        }
     };
+
 
     const statusConfig = {
         PENDING: {
