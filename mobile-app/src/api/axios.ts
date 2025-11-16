@@ -6,7 +6,6 @@ const isWeb = Platform.OS === "web";
 
 let API_URL = '';
 
-
 if (isWeb) {
   API_URL = 'http://localhost:3001/api';
 
