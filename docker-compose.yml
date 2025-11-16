@@ -53,7 +53,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
+      
   frontend:
     build:
       context: ./frontend
@@ -67,7 +67,23 @@ services:
     depends_on:
       - backend
     ports:
-      - "8000:80"
+      - "${FRONTEND_PORT:-8000}:80"
+    networks:
+      - app-network
+
+  mobile-app:
+    build:
+      context: ./mobile-app
+      dockerfile: Dockerfile
+      args:
+        EXPO_PUBLIC_BACKEND_URL_LOCAL: ${EXPO_PUBLIC_BACKEND_URL_LOCAL}
+        EXPO_PUBLIC_BACKEND_URL_PHONE: ${EXPO_PUBLIC_BACKEND_URL_PHONE}
+    container_name: mobile_app
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "${MOBILE_APP_PORT:-8001}:80"
     networks:
       - app-network
 

@@ -1,23 +1,26 @@
-# ---------- 1) Imagen para build ----------
 FROM node:18 AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+ARG EXPO_PUBLIC_BACKEND_URL_LOCAL
+ARG EXPO_PUBLIC_BACKEND_URL_PHONE
+
+# Convertir args a env vars para que Expo las use
+ENV EXPO_PUBLIC_BACKEND_URL_LOCAL=$EXPO_PUBLIC_BACKEND_URL_LOCAL
+ENV EXPO_PUBLIC_BACKEND_URL_PHONE=$EXPO_PUBLIC_BACKEND_URL_PHONE
+
+COPY package.json ./
 RUN npm install
 
 COPY . .
 
 # Construye la versión web
-RUN npx expo export:web
+RUN npx expo export --platform web  
 
-# ---------- 2) Imagen para producción (Nginx) ----------
+
 FROM nginx:stable-alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copia tu config de nginx opcionalmente
-# COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 
