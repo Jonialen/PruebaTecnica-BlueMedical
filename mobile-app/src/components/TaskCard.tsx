@@ -5,7 +5,25 @@ import { format } from 'date-fns';
 import { Task } from '@models';
 import { colors, spacing, borderRadius, typography } from '@theme';
 import { getTaskStatusColors, getTaskStatusLabel } from '@theme';
-import { CheckCircle2, Clock, Loader2, Trash2 } from 'lucide-react-native';
+import { Platform } from "react-native";
+import {
+    CheckCircle2 as NativeCheck,
+    Clock as NativeClock,
+    Loader2 as NativeLoader,
+    Trash2 as NativeTrash
+} from "lucide-react-native";
+
+import {
+    CheckCircle2 as WebCheck,
+    Clock as WebClock,
+    Loader2 as WebLoader,
+    Trash2 as WebTrash
+} from "lucide-react";
+
+const CheckIcon = Platform.OS === "web" ? WebCheck : NativeCheck;
+const ClockIcon = Platform.OS === "web" ? WebClock : NativeClock;
+const LoaderIcon = Platform.OS === "web" ? WebLoader : NativeLoader;
+const TrashIcon = Platform.OS === "web" ? WebTrash : NativeTrash;
 
 interface TaskCardProps {
     task: Task;
@@ -46,13 +64,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
     const statusConfig = {
         PENDING: {
-            icon: Clock,
+            icon: ClockIcon,
         },
         IN_PROGRESS: {
-            icon: Loader2,
+            icon: LoaderIcon,
         },
         COMPLETED: {
-            icon: CheckCircle2,
+            icon: CheckIcon,
         },
     };
 
@@ -61,6 +79,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
     const statusColors = getTaskStatusColors(status);
     const statusLabel = getTaskStatusLabel(status);
+    const safeDescription = (description ?? "").trim();
 
     return (
         <TouchableOpacity
@@ -86,7 +105,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         <Text style={styles.title} numberOfLines={2}>
                             {title}
                         </Text>
-                        {description && (
+                        {safeDescription.length > 0 && (
                             <Text style={styles.description} numberOfLines={2}>
                                 {description}
                             </Text>
@@ -106,7 +125,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     </Text>
 
                     <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-                        <Trash2 size={20} color={colors.neutral[400]} />
+                        <TrashIcon size={20} color={colors.neutral[400]} />
                     </TouchableOpacity>
                 </View>
             </View>
