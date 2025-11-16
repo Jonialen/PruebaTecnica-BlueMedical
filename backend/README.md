@@ -15,10 +15,10 @@ API RESTful construida con Node.js, Express, TypeScript y Prisma ORM.
 
 ## Prerrequisitos
 
-- Node.js >= 20
+- Node.js >= 20 & <25
 - pnpm >= 10.22.0
 - MySQL >= 8.0
-- Docker y Docker Compose (opcional)
+- Docker y Docker Compose (opcional pero recomendado)
 
 ## Instalación y Configuración
 
@@ -30,7 +30,7 @@ pnpm install
 
 ### 2. Configurar variables de entorno
 
-Crear archivo `.env` en la raíz del proyecto backend:
+Renombrar el archivo `.env.example` a `.env` y ajustar los valores según el entorno:
 
 ```env
 DATABASE_URL=mysql://task_user:taskpassword123@localhost:3306/task_manager
@@ -305,16 +305,43 @@ Verificar estado del servidor.
 
 ## Testing
 
+**Importante:** Las pruebas unitarias e de integración están configuradas para funcionar correctamente en versiones de Node.js inferiores a la 25.
+
+### Comandos
+
 ```bash
-# Ejecutar tests
+# Ejecutar todos los tests
 pnpm test
 
-# Tests con coverage
+# Ejecutar tests y generar reporte de cobertura
 pnpm test:coverage
 
-# Tests en watch mode
+# Ejecutar tests en modo "watch" para desarrollo
 pnpm test:watch
 ```
+
+### Estructura de Tests
+
+El directorio `src/__tests__` contiene todas las pruebas del proyecto, organizadas de la siguiente manera:
+
+```
+src/__tests__/
+├── setup.ts              # Configuración inicial para tests (ej. mocks)
+├── integration/          # Pruebas de integración (end-to-end)
+│   ├── auth.test.ts
+│   └── tasks.test.ts
+├── middlewares/          # Pruebas unitarias para middlewares
+│   └── auth.middleware.test.ts
+├── services/             # Pruebas unitarias para la lógica de negocio
+│   ├── auth.service.test.ts
+│   └── task.service.test.ts
+└── utils/                # Pruebas unitarias para funciones de utilidad
+    ├── bcrypt.test.ts
+    └── jwt.test.ts
+```
+
+- **Pruebas de Integración**: Verifican el flujo completo de las rutas de la API, desde la solicitud HTTP hasta la respuesta, interactuando con una base de datos de prueba.
+- **Pruebas Unitarias**: Aíslan y comprueban componentes específicos (servicios, middlewares, utilidades) usando mocks para simular dependencias.
 
 ## Scripts Disponibles
 
@@ -328,6 +355,10 @@ pnpm prisma:studio    # Abrir Prisma Studio
 pnpm seed             # Ejecutar seed (desarrollo)
 pnpm seed:prod        # Ejecutar seed (producción)
 pnpm test             # Ejecuta los tests
+pnpm test:coverage    # Ejecutar tests y generar reporte de cobertura
+pnpm test:watch       # Ejecutar tests en modo "watch" para desarrollo
+pnpm test:unit        # Ejecuta solo los test unitarios
+pnpm test:integration # Ejecuta solo los test de integracion
 ```
 
 ## Arquitectura
@@ -369,5 +400,6 @@ PORT=3002
 ```
 
 ## Notas
-
 - Los triggers de auditoría registran automáticamente todos los cambios en tareas
+- Se agregó un script funcional tanto para generar la base de datos como para ejecutar un seed de pruebas en el entorno de desarrollo.
+  Sin embargo, se consideró que utilizar una base de datos ya existente, con sus tablas y reglas previamente definidas, es una opción más adecuada para el entorno de despliegue de la aplicación.
