@@ -16,3 +16,4 @@ coverage
 *.log
 .docker
 src/__tests__
+coverage
