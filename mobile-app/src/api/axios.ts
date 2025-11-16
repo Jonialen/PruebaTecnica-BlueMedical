@@ -4,15 +4,9 @@ import { Platform } from 'react-native';
 
 const isWeb = Platform.OS === "web";
 
-let API_URL = '';
-
-if (isWeb) {
-  API_URL = 'http://localhost:3001/api';
-
-} else {
-  API_URL = 'http://192.168.0.5:3001/api';
-}
-
+const API_URL = isWeb
+  ? process.env.EXPO_PUBLIC_BACKEND_URL_LOCAL
+  : process.env.EXPO_PUBLIC_BACKEND_URL_PHONE;
 const api = axios.create({
   baseURL: API_URL,
   headers: {
