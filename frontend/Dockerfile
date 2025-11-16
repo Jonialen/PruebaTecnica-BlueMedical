@@ -29,7 +29,7 @@ RUN pnpm build
 
 
 # ---------- Etapa 2: Nginx ----------
-FROM nginx:alpine
+FROM nginx:stable-alpine
 
 # Copiar el build estático
 COPY --from=build /app/dist /usr/share/nginx/html
