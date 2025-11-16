@@ -81,6 +81,145 @@ docker-compose logs -f backend
 docker-compose down
 ```
 
+### Usando Docker Compose (desde ./backend del proyecto)(Recomendado)
+
+El `docker-compose.yml` en el directorio backend levanta MySQL y el backend con **migraciones automáticas**.
+```bash
+# Desde el directorio backend
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f backend
+
+# Detener servicios
+docker-compose down
+
+# Detener y eliminar volúmenes (limpia la BD)
+docker-compose down -v
+```
+
+### ¿Qué hace automáticamente?
+
+1. ✅ Levanta MySQL en el puerto 3307
+2. ✅ Espera a que MySQL esté listo (healthcheck)
+3. ✅ Ejecuta `prisma migrate deploy` automáticamente
+4. ✅ Ejecuta el seed si `NODE_ENV=development` (opcional)
+5. ✅ Inicia el servidor en el puerto 3001
+
+### Ventajas sobre el método anterior
+
+| Característica | Scripts SQL (antes) | Migraciones Prisma (ahora) |
+|----------------|---------------------|----------------------------|
+| **Versionamiento** | Manual | Automático con Prisma |
+| **Rollback** | Manual | Con historial de migraciones |
+| **Sincronización** | Puede desincronizarse del schema | Siempre sincronizado |
+| **Desarrollo** | Editar SQL manualmente | `prisma migrate dev` |
+| **Producción** | Scripts ejecutados una vez | `prisma migrate deploy` |
+
+### Comandos útiles
+```bash
+# Ejecutar comandos dentro del contenedor
+docker-compose exec backend sh
+
+# Ver estado de migraciones
+docker-compose exec backend npx prisma migrate status
+
+# Aplicar nueva migración (desarrollo)
+docker-compose exec backend npx prisma migrate dev --name nombre_migracion
+
+# Ejecutar seed manualmente
+docker-compose exec backend npm run seed:prod
+
+# Reiniciar solo el backend
+docker-compose restart backend
+
+# Ver logs en tiempo real
+docker-compose logs -f backend
+
+# Acceder a MySQL
+docker-compose exec mysql mysql -u task_user -p task_manager
+```
+
+### Crear nuevas migraciones
+```bash
+# 1. Modifica el schema.prisma
+# 2. Genera la migración (dentro del contenedor)
+docker-compose exec backend npx prisma migrate dev --name add_nueva_columna
+
+# O desde tu máquina local (si tienes Node.js)
+pnpm prisma migrate dev --name add_nueva_columna
+
+# 3. La migración se aplicará automáticamente al reiniciar
+docker-compose restart backend
+```
+
+### Variables de entorno
+
+Crea un archivo `.env` en el directorio backend:
+```env
+MYSQL_ROOT_PASSWORD=root_password
+MYSQL_DATABASE=task_manager
+MYSQL_USER=task_user
+MYSQL_PASSWORD=taskpassword123
+MYSQL_PORT=3307
+DATABASE_URL=mysql://task_user:taskpassword123@mysql:3306/task_manager
+JWT_SECRET=your-super-secret-jwt-key
+BACKEND_PORT=3001
+NODE_ENV=production
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+```
+
+### Troubleshooting
+
+#### Error: "Can't connect to MySQL server"
+```bash
+# Verifica que MySQL esté corriendo
+docker-compose ps
+
+# Verifica los logs de MySQL
+docker-compose logs mysql
+
+# Reinicia MySQL
+docker-compose restart mysql
+```
+
+#### Error: "Migration engine error"
+```bash
+# Elimina volúmenes y vuelve a crear
+docker-compose down -v
+docker-compose up -d
+
+# O resetea la base de datos
+docker-compose exec backend npx prisma migrate reset --force
+```
+
+#### Aplicar migraciones manualmente
+```bash
+# Entrar al contenedor
+docker-compose exec backend sh
+
+# Aplicar migraciones
+npx prisma migrate deploy
+
+# Ver estado
+npx prisma migrate status
+```
+
+### Diferencias con el Docker Compose principal
+```bash
+# Docker Compose principal (raíz del proyecto)
+# - Levanta: MySQL, Backend, Frontend, Mobile App
+# - Usa: Scripts SQL de inicialización
+cd /
+docker-compose up -d
+
+# Docker Compose del backend (directorio backend)
+# - Levanta: Solo MySQL y Backend
+# - Usa: Migraciones de Prisma
+cd backend
+docker-compose up -d
+```
+
 ### Solo Backend
 
 ```bash
@@ -93,6 +232,7 @@ docker run -p 3001:3001 \
   -e JWT_SECRET=your-secret \
   task-manager-backend
 ```
+
 
 ## Estructura del Proyecto
 
