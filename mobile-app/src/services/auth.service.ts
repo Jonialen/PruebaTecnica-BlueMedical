@@ -1,41 +1,29 @@
-// src/services/auth.service.ts
-import * as SecureStore from 'expo-secure-store';
-import api from '@api/axios';
-import { LoginCredentials, RegisterData, AuthResponse } from '@models';
+import api from "@api/axios";
+import { storage } from "@services/storage.service";
+import { LoginCredentials, RegisterData, AuthResponse } from "@models";
+
+const TOKEN_KEY = "token";
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const { data } = await api.post<AuthResponse>('/login', credentials);
+    const { data } = await api.post<AuthResponse>("/login", credentials);
     return data;
   },
 
   async register(userData: RegisterData): Promise<AuthResponse> {
-    const { data } = await api.post<AuthResponse>('/register', userData);
+    const { data } = await api.post<AuthResponse>("/register", userData);
     return data;
   },
 
-  async getStoredToken(): Promise<string | null> {
-    try {
-      return await SecureStore.getItemAsync('token');
-    } catch (error) {
-      console.error('Error getting token:', error);
-      return null;
-    }
+  async getStoredToken() {
+    return await storage.getItem(TOKEN_KEY);
   },
 
-  async setStoredToken(token: string): Promise<void> {
-    try {
-      await SecureStore.setItemAsync('token', token);
-    } catch (error) {
-      console.error('Error storing token:', error);
-    }
+  async setStoredToken(token: string) {
+    await storage.setItem(TOKEN_KEY, token);
   },
 
-  async logout(): Promise<void> {
-    try {
-      await SecureStore.deleteItemAsync('token');
-    } catch (error) {
-      console.error('Error deleting token:', error);
-    }
+  async logout() {
+    await storage.removeItem(TOKEN_KEY);
   },
 };

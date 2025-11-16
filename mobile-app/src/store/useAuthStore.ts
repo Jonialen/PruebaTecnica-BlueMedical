@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { authService } from '@services/auth.service';
 import { User } from '@models';
+import { Platform } from "react-native";
 
 interface AuthState {
   user: User | null;
@@ -98,5 +99,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     await authService.logout();
     set({ user: null, token: null });
+
+    if (Platform.OS === "web") {
+      window.location.reload();
+    }
   },
 }));

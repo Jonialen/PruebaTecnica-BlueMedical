@@ -1,8 +1,18 @@
-// src/api/axios.ts
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '@/services/storage.service';
+import { Platform } from 'react-native';
 
-const API_URL = 'http://192.168.0.5:3001/api';
+const isWeb = Platform.OS === "web";
+
+let API_URL = '';
+
+
+if (isWeb) {
+  API_URL = 'http://localhost:3001/api';
+
+} else {
+  API_URL = 'http://192.168.0.5:3001/api';
+}
 
 const api = axios.create({
   baseURL: API_URL,
@@ -12,31 +22,30 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor para añadir el token
+// Request interceptor usa storage universal
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = await SecureStore.getItemAsync('token');
+      const token = await storage.getItem('token');
+
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
-      console.error('Error getting token:', error);
+      console.error('Error reading token from storage:', error);
     }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor para manejar errores
+// Response interceptor para manejar 401
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Token inválido o expirado
-      await SecureStore.deleteItemAsync('token');
+      await storage.removeItem('token');
     }
     return Promise.reject(error);
   }
