@@ -1,5 +1,5 @@
-// src/screens/LoginScreen.tsx - Refactorizado
-import React, { useState } from 'react';
+// src/screens/LoginScreen.tsx - Fixed with better error handling
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -25,10 +25,17 @@ interface Props {
 }
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-    const { login, loading, error } = useAuthStore();
+    const { login, loading, error, clearError } = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [validationError, setValidationError] = useState<string | null>(null);
+
+    // Clear errors when component unmounts
+    useEffect(() => {
+        return () => {
+            clearError();
+        };
+    }, []);
 
     const validateForm = () => {
         if (!email.trim()) {
@@ -48,14 +55,24 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
     const handleLogin = async () => {
         setValidationError(null);
+        clearError();
 
         if (!validateForm()) return;
 
+        console.log('Attempting login...');
         const success = await login(email, password);
+
         if (success) {
-            Alert.alert('Éxito', 'Inicio de sesión exitoso');
+            console.log('Login successful');
+            // No need to show alert, navigation will happen automatically
         } else if (error) {
-            Alert.alert('Error', error);
+            console.log('Login failed:', error);
+            if (Platform.OS === 'web') {
+                // For web, use window.alert to ensure it shows
+                window.alert('Error: ' + error);
+            } else {
+                Alert.alert('Error', error);
+            }
         }
     };
 
@@ -87,11 +104,13 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                         onChangeText={(text) => {
                             setEmail(text);
                             setValidationError(null);
+                            clearError();
                         }}
                         placeholder="tu@email.com"
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoCorrect={false}
+                        editable={!loading}
                     />
 
                     <Input
@@ -100,10 +119,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                         onChangeText={(text) => {
                             setPassword(text);
                             setValidationError(null);
+                            clearError();
                         }}
                         placeholder="••••••••"
                         secureTextEntry
                         autoCapitalize="none"
+                        editable={!loading}
                     />
 
                     {displayError && (
@@ -116,13 +137,17 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                         title="Iniciar sesión"
                         onPress={handleLogin}
                         loading={loading}
+                        disabled={loading}
                         style={authStyles.submitButton}
                     />
                 </View>
 
                 <View style={authStyles.footer}>
                     <Text style={authStyles.footerText}>¿No tienes una cuenta?</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Register')}
+                        disabled={loading}
+                    >
                         <Text style={authStyles.linkText}>Crear cuenta nueva</Text>
                     </TouchableOpacity>
                 </View>
