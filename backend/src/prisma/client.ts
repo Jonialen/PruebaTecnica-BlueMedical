@@ -11,7 +11,7 @@ import { PrismaClient } from "@prisma/client";
  * y optimizar las consultas a la base de datos.
  */
 const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error']
+  // log: ['query', 'info', 'warn', 'error']
 })
 
 /**

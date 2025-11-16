@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "seed": "tsx prisma/seed.ts",
-    "seed:prod": "node dist/prisma/seed.ts",
+    "seed:prod": "node dist/prisma/seed.js",
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
@@ -16,8 +16,9 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest ",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
-    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest --testPathPattern=__tests__/(utils|services|middlewares)",
-    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --testPathPattern=__tests__/integration"
+    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest __tests__/{utils,services,middlewares}",
+    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --testPathPatterns=\"__tests__/integration\""
+
   },
   "keywords": [],
   "author": "",

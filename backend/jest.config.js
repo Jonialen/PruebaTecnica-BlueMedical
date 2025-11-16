@@ -3,7 +3,6 @@ export default {
   testEnvironment: 'node',
   testEnvironmentOptions: {
     customExportConditions: ['node', 'node-addons'],
-    localStorageFile: '/tmp/jest-localstorage'
   },
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
@@ -25,10 +24,29 @@ export default {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/index.ts',
+    '!src/__tests__/**',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
-  maxWorkers: 1,
+  
+  // Configuración para evitar problemas de memoria y timeout
+  maxWorkers: '50%', // Usar 50% de CPUs disponibles
   workerIdleMemoryLimit: '512MB',
+  testTimeout: 10000, // 10 segundos por test
+  
+  // Mejorar rendimiento
+  maxConcurrency: 5,
+  
+  // Limpiar mocks automáticamente
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true,
+  
+  // Verbose para mejor debugging
+  verbose: true,
+  
+  // Detectar handles abiertos que impidan que Jest termine
+  detectOpenHandles: true,
+  forceExit: true, // Forzar salida después de los tests
 };
