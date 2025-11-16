@@ -1,4 +1,4 @@
-// src/store/useAuthStore.ts
+// src/store/useAuthStore.ts - Fixed for web
 import { create } from 'zustand';
 import { authService } from '@services/auth.service';
 import { User } from '@models';
@@ -15,6 +15,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  clearError: () => void;
 }
 
 const extractErrorMessage = (error: unknown): string => {
@@ -37,16 +38,19 @@ const extractErrorMessage = (error: unknown): string => {
   return 'Ha ocurrido un error inesperado';
 };
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   loading: false,
   error: null,
   isInitialized: false,
 
+  clearError: () => set({ error: null }),
+
   initialize: async () => {
     try {
       const token = await authService.getStoredToken();
+      console.log('Token initialized:', token ? 'exists' : 'null');
       set({ token, isInitialized: true });
     } catch (error) {
       console.error('Error initializing auth:', error);
@@ -57,12 +61,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ loading: true, error: null });
     try {
+      console.log('Login attempt for:', email);
       const response = await authService.login({ email, password });
 
       if (response.status === 'success') {
         const { token, user } = response.data;
+        console.log('Login successful, saving token');
         await authService.setStoredToken(token);
-        set({ token, user, loading: false });
+        
+        // Force state update
+        set({ 
+          token, 
+          user, 
+          loading: false,
+          error: null 
+        });
+        
+        console.log('Auth state updated:', { hasToken: !!token, hasUser: !!user });
         return true;
       }
 
@@ -70,6 +85,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       return false;
     } catch (err: unknown) {
       const msg = extractErrorMessage(err);
+      console.error('Login error:', msg);
       set({ error: msg, loading: false });
       return false;
     }
@@ -78,12 +94,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (name, email, password) => {
     set({ loading: true, error: null });
     try {
+      console.log('Register attempt for:', email);
       const response = await authService.register({ name, email, password });
 
       if (response.status === 'success') {
         const { user, token } = response.data;
+        console.log('Register successful, saving token');
         await authService.setStoredToken(token);
-        set({ token, user, loading: false });
+        
+        // Force state update
+        set({ 
+          token, 
+          user, 
+          loading: false,
+          error: null 
+        });
+        
+        console.log('Auth state updated:', { hasToken: !!token, hasUser: !!user });
         return true;
       }
 
@@ -91,17 +118,45 @@ export const useAuthStore = create<AuthState>((set) => ({
       return false;
     } catch (err: unknown) {
       const msg = extractErrorMessage(err);
+      console.error('Register error:', msg);
       set({ error: msg, loading: false });
       return false;
     }
   },
 
   logout: async () => {
-    await authService.logout();
-    set({ user: null, token: null });
+    try {
+      console.log('Logout initiated');
+      await authService.logout();
+      
+      // Clear state immediately
+      set({ 
+        user: null, 
+        token: null,
+        error: null,
+        loading: false 
+      });
+      
+      console.log('Logout complete, state cleared');
 
-    if (Platform.OS === "web") {
-      window.location.reload();
+      // Reload page on web to reset everything
+      if (Platform.OS === "web") {
+        console.log('Reloading web page');
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear state even if there's an error
+      set({ 
+        user: null, 
+        token: null,
+        error: null,
+        loading: false 
+      });
+      
+      if (Platform.OS === "web") {
+        window.location.href = '/';
+      }
     }
   },
 }));
