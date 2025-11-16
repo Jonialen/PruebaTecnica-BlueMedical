@@ -1,4 +1,4 @@
-// src/screens/TasksScreen.tsx - Con Floating Action Button
+// src/screens/TasksScreen.tsx - Fixed logout button for web
 import React, { useEffect, useState } from 'react';
 import {
     View,
@@ -9,6 +9,7 @@ import {
     TextInput,
     Alert,
     Modal,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@store/useAuthStore';
@@ -21,7 +22,23 @@ import { Task, TaskStatus } from '@models';
 import { tasksStyles } from './styles/tasksStyles';
 import { commonStyles } from '@theme/commonStyles';
 import { colors } from '@theme';
-import { Plus, LogOut, CheckSquare } from 'lucide-react-native';
+
+// Import icons conditionally based on platform
+import {
+    Plus as NativePlus,
+    LogOut as NativeLogOut,
+    CheckSquare as NativeCheckSquare
+} from 'lucide-react-native';
+
+import {
+    Plus as WebPlus,
+    LogOut as WebLogOut,
+    CheckSquare as WebCheckSquare
+} from 'lucide-react';
+
+const PlusIcon = Platform.OS === 'web' ? WebPlus : NativePlus;
+const LogOutIcon = Platform.OS === 'web' ? WebLogOut : NativeLogOut;
+const CheckSquareIcon = Platform.OS === 'web' ? WebCheckSquare : NativeCheckSquare;
 
 // Componente separado para el Header
 const TasksHeader: React.FC<{
@@ -34,7 +51,7 @@ const TasksHeader: React.FC<{
         <View style={tasksStyles.headerTop}>
             <View style={tasksStyles.headerLeft}>
                 <View style={tasksStyles.iconContainer}>
-                    <CheckSquare color={colors.white} size={28} />
+                    <CheckSquareIcon color={colors.white} size={28} />
                 </View>
                 <View>
                     <Text style={tasksStyles.headerTitle}>Mis Tareas</Text>
@@ -46,7 +63,7 @@ const TasksHeader: React.FC<{
                 </View>
             </View>
             <TouchableOpacity onPress={onLogout} style={tasksStyles.logoutButton}>
-                <LogOut size={24} color={colors.neutral[600]} />
+                <LogOutIcon size={24} color={colors.neutral[600]} />
             </TouchableOpacity>
         </View>
 
@@ -62,7 +79,7 @@ const TasksHeader: React.FC<{
     </View>
 );
 
-// Componente para los filtros (sin botón de nueva tarea)
+// Componente para los filtros
 const TaskFilters: React.FC<{
     filter: string;
     onFilterChange: (filter: string) => void;
@@ -234,10 +251,18 @@ const TasksScreen = () => {
     );
 
     const handleLogout = () => {
-        Alert.alert('Cerrar sesión', '¿Estás seguro de cerrar sesión?', [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Cerrar sesión', style: 'destructive', onPress: logout },
-        ]);
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm('¿Estás seguro de cerrar sesión?');
+            if (confirmed) {
+                console.log('User confirmed logout');
+                logout();
+            }
+        } else {
+            Alert.alert('Cerrar sesión', '¿Estás seguro de cerrar sesión?', [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Cerrar sesión', style: 'destructive', onPress: logout },
+            ]);
+        }
     };
 
     const openModal = (task?: Task) => {
@@ -324,7 +349,7 @@ const TasksScreen = () => {
             {/* Floating Action Button */}
             <FloatingActionButton
                 onPress={() => openModal()}
-                icon={<Plus color={colors.white} size={24} />}
+                icon={<PlusIcon color={colors.white} size={24} />}
                 size="medium"
             />
 
