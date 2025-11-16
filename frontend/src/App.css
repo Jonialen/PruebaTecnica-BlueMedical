@@ -1,42 +1,54 @@
+/* App.css (src/App.css) */
+
+/* Estilos para el contenedor raíz de la aplicación */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: 1280px; /* Ancho máximo del contenedor */
+  margin: 0 auto; /* Centra el contenedor horizontalmente */
+  padding: 2rem; /* Relleno alrededor del contenido */
+  text-align: center; /* Alinea el texto al centro */
 }
 
+/* Estilos para los logotipos */
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  height: 6em; /* Altura del logotipo */
+  padding: 1.5em; /* Relleno alrededor del logotipo */
+  will-change: filter; /* Optimización para animaciones de filtro */
+  transition: filter 300ms; /* Transición suave para el filtro */
 }
 
+/* Efecto hover para los logotipos */
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa); /* Sombra al pasar el ratón */
+}
+
+/* Efecto hover específico para el logotipo de React */
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa); /* Sombra específica para React */
+}
+
+/* Animación de giro para los logotipos */
 @keyframes logo-spin {
   from {
-    transform: rotate(0deg);
+    transform: rotate(0deg); /* Inicia sin rotación */
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(360deg); /* Gira 360 grados */
   }
 }
 
+/* Aplica la animación de giro si las preferencias de movimiento lo permiten */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+    animation: logo-spin infinite 20s linear; /* Animación infinita de 20s */
   }
 }
 
+/* Estilos para tarjetas */
 .card {
-  padding: 2em;
+  padding: 2em; /* Relleno de la tarjeta */
 }
 
+/* Estilos para texto de documentación */
 .read-the-docs {
-  color: #888;
+  color: #888; /* Color de texto gris */
 }

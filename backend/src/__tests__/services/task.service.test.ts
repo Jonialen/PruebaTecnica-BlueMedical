@@ -1,11 +1,25 @@
 // src/__tests__/services/task.service.test.ts
 
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import { TaskService } from '../../services/tasks.service.js';
-import { TaskRepository } from '../../repositories/task.repository.js';
-import { AppError } from '../../middlewares/error.middleware.js';
 
-jest.mock('../../repositories/task.repository.js');
+const mockFindAllByUser = jest.fn();
+const mockFindById = jest.fn();
+const mockCreateTask = jest.fn();
+const mockUpdateTask = jest.fn();
+const mockRemoveTask = jest.fn();
+
+jest.unstable_mockModule('../../repositories/task.repository.js', () => ({
+  TaskRepository: {
+    findAllByUser: mockFindAllByUser,
+    findById: mockFindById,
+    create: mockCreateTask,
+    update: mockUpdateTask,
+    remove: mockRemoveTask,
+  },
+}));
+
+const { TaskService } = await import('../../services/tasks.service.js');
+const { AppError } = await import('../../middlewares/error.middleware.js');
 
 describe('TaskService', () => {
   beforeEach(() => {
@@ -15,29 +29,29 @@ describe('TaskService', () => {
   describe('list', () => {
     it('should return all tasks for a user', async () => {
       const mockTasks = [
-        { id: 1, title: 'Task 1', userId: 1, status: 'PENDING' },
-        { id: 2, title: 'Task 2', userId: 1, status: 'COMPLETED' },
+        { id: 1, title: 'Task 1', userId: 1, status: 'PENDING', description: null, createdAt: new Date(), updatedAt: new Date() },
+        { id: 2, title: 'Task 2', userId: 1, status: 'COMPLETED', description: null, createdAt: new Date(), updatedAt: new Date() },
       ];
 
-      (TaskRepository.findAllByUser as jest.Mock).mockResolvedValue(mockTasks);
+      mockFindAllByUser.mockResolvedValue(mockTasks);
 
       const result = await TaskService.list(1);
 
       expect(result).toEqual(mockTasks);
-      expect(TaskRepository.findAllByUser).toHaveBeenCalledWith(1, undefined);
+      expect(mockFindAllByUser).toHaveBeenCalledWith(1, undefined);
     });
 
     it('should filter tasks by status', async () => {
       const mockTasks = [
-        { id: 1, title: 'Task 1', userId: 1, status: 'PENDING' },
+        { id: 1, title: 'Task 1', userId: 1, status: 'PENDING', description: null, createdAt: new Date(), updatedAt: new Date() },
       ];
 
-      (TaskRepository.findAllByUser as jest.Mock).mockResolvedValue(mockTasks);
+      mockFindAllByUser.mockResolvedValue(mockTasks);
 
       const result = await TaskService.list(1, 'PENDING');
 
       expect(result).toEqual(mockTasks);
-      expect(TaskRepository.findAllByUser).toHaveBeenCalledWith(1, 'PENDING');
+      expect(mockFindAllByUser).toHaveBeenCalledWith(1, 'PENDING');
     });
 
     it('should throw error for invalid status', async () => {
@@ -53,11 +67,13 @@ describe('TaskService', () => {
         id: 1,
         title: 'New Task',
         description: 'Task description',
-        status: 'PENDING',
+        status: 'PENDING' as const,
         userId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (TaskRepository.create as jest.Mock).mockResolvedValue(mockTask);
+      mockCreateTask.mockResolvedValue(mockTask);
 
       const result = await TaskService.create(1, {
         title: 'New Task',
@@ -65,7 +81,7 @@ describe('TaskService', () => {
       });
 
       expect(result).toEqual(mockTask);
-      expect(TaskRepository.create).toHaveBeenCalledWith({
+      expect(mockCreateTask).toHaveBeenCalledWith({
         title: 'New Task',
         description: 'Task description',
         userId: 1,
@@ -77,18 +93,21 @@ describe('TaskService', () => {
       const mockTask = {
         id: 1,
         title: 'New Task',
-        status: 'IN_PROGRESS',
+        description: null,
+        status: 'IN_PROGRESS' as const,
         userId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (TaskRepository.create as jest.Mock).mockResolvedValue(mockTask);
+      mockCreateTask.mockResolvedValue(mockTask);
 
       await TaskService.create(1, {
         title: 'New Task',
         status: 'IN_PROGRESS',
       });
 
-      expect(TaskRepository.create).toHaveBeenCalledWith({
+      expect(mockCreateTask).toHaveBeenCalledWith({
         title: 'New Task',
         userId: 1,
         status: 'IN_PROGRESS',
@@ -102,17 +121,20 @@ describe('TaskService', () => {
         id: 1,
         title: 'Original Task',
         userId: 1,
-        status: 'PENDING',
+        status: 'PENDING' as const,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       const updatedTask = {
         ...mockTask,
         title: 'Updated Task',
-        status: 'COMPLETED',
+        status: 'COMPLETED' as const,
       };
 
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(mockTask);
-      (TaskRepository.update as jest.Mock).mockResolvedValue(updatedTask);
+      mockFindById.mockResolvedValue(mockTask);
+      mockUpdateTask.mockResolvedValue(updatedTask);
 
       const result = await TaskService.update(1, 1, {
         title: 'Updated Task',
@@ -120,14 +142,14 @@ describe('TaskService', () => {
       });
 
       expect(result).toEqual(updatedTask);
-      expect(TaskRepository.update).toHaveBeenCalledWith(1, {
+      expect(mockUpdateTask).toHaveBeenCalledWith(1, {
         title: 'Updated Task',
         status: 'COMPLETED',
       });
     });
 
     it('should throw error if task not found', async () => {
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(null);
+      mockFindById.mockResolvedValue(null);
 
       await expect(
         TaskService.update(999, 1, { title: 'Updated' })
@@ -138,10 +160,14 @@ describe('TaskService', () => {
       const mockTask = {
         id: 1,
         title: 'Task',
-        userId: 2, // Different user
+        userId: 2,
+        status: 'PENDING' as const,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(mockTask);
+      mockFindById.mockResolvedValue(mockTask);
 
       await expect(
         TaskService.update(1, 1, { title: 'Updated' })
@@ -157,18 +183,22 @@ describe('TaskService', () => {
         id: 1,
         title: 'Task to delete',
         userId: 1,
+        status: 'PENDING' as const,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(mockTask);
-      (TaskRepository.remove as jest.Mock).mockResolvedValue(mockTask);
+      mockFindById.mockResolvedValue(mockTask);
+      mockRemoveTask.mockResolvedValue(mockTask);
 
       await TaskService.remove(1, 1);
 
-      expect(TaskRepository.remove).toHaveBeenCalledWith(1);
+      expect(mockRemoveTask).toHaveBeenCalledWith(1);
     });
 
     it('should throw error if task not found', async () => {
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(null);
+      mockFindById.mockResolvedValue(null);
 
       await expect(TaskService.remove(999, 1)).rejects.toThrow(
         new AppError(404, 'Task not found')
@@ -179,9 +209,14 @@ describe('TaskService', () => {
       const mockTask = {
         id: 1,
         userId: 2,
+        title: 'Task',
+        status: 'PENDING' as const,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(mockTask);
+      mockFindById.mockResolvedValue(mockTask);
 
       await expect(TaskService.remove(1, 1)).rejects.toThrow(
         new AppError(403, "You don't have permission to delete this task")
@@ -195,9 +230,13 @@ describe('TaskService', () => {
         id: 1,
         title: 'Task',
         userId: 1,
+        status: 'PENDING' as const,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(mockTask);
+      mockFindById.mockResolvedValue(mockTask);
 
       const result = await TaskService.getById(1, 1);
 
@@ -205,7 +244,7 @@ describe('TaskService', () => {
     });
 
     it('should throw error if task not found', async () => {
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(null);
+      mockFindById.mockResolvedValue(null);
 
       await expect(TaskService.getById(999, 1)).rejects.toThrow(
         new AppError(404, 'Task not found')
@@ -216,9 +255,14 @@ describe('TaskService', () => {
       const mockTask = {
         id: 1,
         userId: 2,
+        title: 'Task',
+        status: 'PENDING' as const,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (TaskRepository.findById as jest.Mock).mockResolvedValue(mockTask);
+      mockFindById.mockResolvedValue(mockTask);
 
       await expect(TaskService.getById(1, 1)).rejects.toThrow(
         new AppError(403, "You don't have permission to view this task")

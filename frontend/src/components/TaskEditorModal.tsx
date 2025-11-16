@@ -1,3 +1,5 @@
+// TaskEditorModal.tsx (src/components/TaskEditorModal.tsx)
+
 import { useState } from "react";
 import { X, Save, Plus, FileText, Type } from 'lucide-react';
 import type { Task } from "@models/task.types";
@@ -6,12 +8,27 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import clsx from "clsx";
 
+/**
+ * Props para el componente TaskEditorModal.
+ */
 interface Props {
+    /** La tarea a editar. Si es `null`, se crea una nueva tarea. */
     task: Task | null;
+    /** Función a llamar cuando se cierra el modal. */
     onClose: () => void;
+    /** Función a llamar cuando se guarda la tarea. */
     onSave: (data: Partial<Task>) => Promise<void>;
 }
 
+/**
+ * Componente de modal para crear o editar una tarea.
+ * 
+ * Muestra un formulario para editar el título y la descripción de una tarea.
+ * Maneja la validación del formulario y el estado de guardado.
+ *
+ * @param {Props} props - Las propiedades del componente.
+ * @returns {JSX.Element} El modal de edición de tareas.
+ */
 export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
     const [title, setTitle] = useState(task?.title || "");
     const [description, setDescription] = useState(task?.description || "");
@@ -19,6 +36,12 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
     const [saving, setSaving] = useState(false);
     const isEditing = !!task;
 
+    /**
+     * Maneja el guardado de la tarea.
+     * 
+     * Valida el título y, si es válido, llama a la función `onSave`.
+     * Muestra un error si la validación falla.
+     */
     const handleSave = async () => {
         if (!isValidTaskTitle(title)) {
             setError("El título debe tener entre 1 y 255 caracteres");
@@ -42,7 +65,7 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                 borderColor: 'var(--border-primary)',
                 boxShadow: 'var(--shadow-lg)'
             }}>
-                {/* Header */}
+                {/* Encabezado del modal */}
                 <div className="flex justify-between items-center !p-4 border-b-2" style={{ borderColor: 'var(--border-primary)' }}>
                     <div className="flex items-center gap-4">
                         <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{
@@ -78,7 +101,7 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                     </button>
                 </div>
 
-                {/* Body */}
+                {/* Cuerpo del modal con el formulario */}
                 <div className="!p-3 space-y-6">
                     <Input
                         label="Título"
@@ -127,7 +150,7 @@ export const TaskEditorModal = ({ task, onClose, onSave }: Props) => {
                     </div>
                 </div>
 
-                {/* Footer */}
+                {/* Pie de página del modal con los botones de acción */}
                 <div className="flex justify-end gap-4 !px-2 border-t-2 rounded-b-2xl" style={{
                     borderColor: 'var(--border-primary)',
                     backgroundColor: 'var(--bg-tertiary)'

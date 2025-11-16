@@ -1,7 +1,13 @@
+// tsconfig.json (tsconfig.json)
+
 {
+  // Este es el archivo de configuración raíz de TypeScript para el proyecto.
+  // No contiene configuraciones directas, sino que hace referencia a otros archivos de configuración.
   "files": [],
   "references": [
+    // Referencia al archivo de configuración específico para la aplicación (código del frontend).
     { "path": "./tsconfig.app.json" },
+    // Referencia al archivo de configuración específico para entornos de Node.js (ej. scripts de build, tests).
     { "path": "./tsconfig.node.json" }
   ]
 }

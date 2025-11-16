@@ -2,21 +2,27 @@
 
 import { describe, it, expect, jest, beforeAll } from '@jest/globals';
 import request from 'supertest';
-import app from '../../app.js';
-import { prisma } from '../../prisma/client.js';
-import { generateToken } from '../../utils/jwt.js';
 
-jest.mock('../../prisma/client.js', () => ({
+const mockFindMany = jest.fn();
+const mockFindUnique = jest.fn();
+const mockCreate = jest.fn();
+const mockUpdate = jest.fn();
+const mockDelete = jest.fn();
+
+jest.unstable_mockModule('../../prisma/client.js', () => ({
   prisma: {
     tasks: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
+      findMany: mockFindMany,
+      findUnique: mockFindUnique,
+      create: mockCreate,
+      update: mockUpdate,
+      delete: mockDelete,
     },
   },
 }));
+
+const { default: app } = await import('../../app.js');
+const { generateToken } = await import('../../utils/jwt.js');
 
 describe('Tasks Integration Tests', () => {
   let authToken: string;
@@ -33,7 +39,7 @@ describe('Tasks Integration Tests', () => {
           id: 1,
           title: 'Task 1',
           description: 'Description 1',
-          status: 'PENDING',
+          status: 'PENDING' as const,
           userId: mockUserId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -42,14 +48,14 @@ describe('Tasks Integration Tests', () => {
           id: 2,
           title: 'Task 2',
           description: 'Description 2',
-          status: 'COMPLETED',
+          status: 'COMPLETED' as const,
           userId: mockUserId,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ];
 
-      (prisma.tasks.findMany as jest.Mock).mockResolvedValue(mockTasks);
+      mockFindMany.mockResolvedValue(mockTasks);
 
       const response = await request(app)
         .get('/api/tasks')
@@ -72,14 +78,15 @@ describe('Tasks Integration Tests', () => {
         {
           id: 1,
           title: 'Pending Task',
-          status: 'PENDING',
+          description: null,
+          status: 'PENDING' as const,
           userId: mockUserId,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ];
 
-      (prisma.tasks.findMany as jest.Mock).mockResolvedValue(mockTasks);
+      mockFindMany.mockResolvedValue(mockTasks);
 
       const response = await request(app)
         .get('/api/tasks?status=PENDING')
@@ -97,13 +104,13 @@ describe('Tasks Integration Tests', () => {
         id: 1,
         title: 'New Task',
         description: 'Task description',
-        status: 'PENDING',
+        status: 'PENDING' as const,
         userId: mockUserId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      (prisma.tasks.create as jest.Mock).mockResolvedValue(newTask);
+      mockCreate.mockResolvedValue(newTask);
 
       const response = await request(app)
         .post('/api/tasks')
@@ -147,18 +154,21 @@ describe('Tasks Integration Tests', () => {
       const existingTask = {
         id: 1,
         title: 'Original Task',
+        description: null,
         userId: mockUserId,
-        status: 'PENDING',
+        status: 'PENDING' as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       const updatedTask = {
         ...existingTask,
         title: 'Updated Task',
-        status: 'COMPLETED',
+        status: 'COMPLETED' as const,
       };
 
-      (prisma.tasks.findUnique as jest.Mock).mockResolvedValue(existingTask);
-      (prisma.tasks.update as jest.Mock).mockResolvedValue(updatedTask);
+      mockFindUnique.mockResolvedValue(existingTask);
+      mockUpdate.mockResolvedValue(updatedTask);
 
       const response = await request(app)
         .put('/api/tasks/1')
@@ -190,11 +200,15 @@ describe('Tasks Integration Tests', () => {
       const taskToDelete = {
         id: 1,
         title: 'Task to delete',
+        description: null,
+        status: 'PENDING' as const,
         userId: mockUserId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      (prisma.tasks.findUnique as jest.Mock).mockResolvedValue(taskToDelete);
-      (prisma.tasks.delete as jest.Mock).mockResolvedValue(taskToDelete);
+      mockFindUnique.mockResolvedValue(taskToDelete);
+      mockDelete.mockResolvedValue(taskToDelete);
 
       const response = await request(app)
         .delete('/api/tasks/1')
@@ -220,13 +234,13 @@ describe('Tasks Integration Tests', () => {
         id: 1,
         title: 'Task 1',
         description: 'Description',
-        status: 'PENDING',
+        status: 'PENDING' as const,
         userId: mockUserId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      (prisma.tasks.findUnique as jest.Mock).mockResolvedValue(mockTask);
+      mockFindUnique.mockResolvedValue(mockTask);
 
       const response = await request(app)
         .get('/api/tasks/1')

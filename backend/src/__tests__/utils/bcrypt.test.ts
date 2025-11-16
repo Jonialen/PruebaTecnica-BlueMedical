@@ -45,7 +45,9 @@ describe('Bcrypt Utils', () => {
       const password = 'test123456';
       const invalidHash = 'invalid-hash';
       
-      await expect(comparePassword(password, invalidHash)).rejects.toThrow();
+      // bcrypt doesn't throw for invalid hash, it returns false
+      const result = await comparePassword(password, invalidHash);
+      expect(result).toBe(false);
     });
   });
 });

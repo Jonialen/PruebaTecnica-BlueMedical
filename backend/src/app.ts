@@ -1,40 +1,61 @@
 // app.ts (src/app.ts)
 
-import express, { Express } from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import authRoutes from "./routes/auth.routes.js";
-import taskRoutes from "./routes/tasks.routes.js";
-import { corsOptions, corsDevOptions } from "./config/cors.config.js";
-import { errorHandler } from "./middlewares/error.middleware.js";
+import express, { Express } from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import authRoutes from './routes/auth.routes.js'
+import taskRoutes from './routes/tasks.routes.js'
+import { corsOptions, corsDevOptions } from './config/cors.config.js'
+import { errorHandler } from './middlewares/error.middleware.js'
 
-dotenv.config();
+// Carga las variables de entorno desde el archivo .env
+dotenv.config()
 
-const app: Express = express();
+/**
+ * Instancia principal de la aplicación Express.
+ * @type {Express}
+ */
+const app: Express = express()
 
-// CORS - usar configuración según el entorno
-const isDevelopment = process.env.NODE_ENV !== "production";
-app.use(cors(isDevelopment ? corsDevOptions : corsOptions));
+// --- Middlewares ---
 
-// Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Configuración de CORS, diferenciando entre entorno de desarrollo y producción
+const isDevelopment = process.env.NODE_ENV !== 'production'
+app.use(cors(isDevelopment ? corsDevOptions : corsOptions))
 
-// Health check endpoint
-app.get("/health", (req, res) => {
-    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
-});
+// Middlewares para el parseo del cuerpo de las solicitudes
+app.use(express.json()) // Parsea solicitudes con formato JSON
+app.use(express.urlencoded({ extended: true })) // Parsea solicitudes con formato urlencoded
 
-// Routes
-app.use("/api", authRoutes);
-app.use("/api/tasks", taskRoutes);
+// --- Rutas ---
 
-// 404 handler
+/**
+ * @route GET /health
+ * @description Endpoint para verificar el estado de la aplicación.
+ * @returns {object} 200 - Un objeto con el estado y la marca de tiempo.
+ */
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// Rutas principales de la aplicación
+app.use('/api', authRoutes) // Rutas de autenticación
+app.use('/api/tasks', taskRoutes) // Rutas de tareas
+
+// --- Manejo de Errores ---
+
+/**
+ * Middleware para manejar rutas no encontradas (404).
+ * Se activa si ninguna de las rutas anteriores coincide.
+ */
 app.use((req, res) => {
-    res.status(404).json({ message: "Route not found" });
-});
+  res.status(404).json({ message: 'Route not found' })
+})
 
-// Error handler global
-app.use(errorHandler);
+/**
+ * Middleware global para el manejo de errores.
+ * Centraliza la gestión de todos los errores lanzados en la aplicación.
+ */
+app.use(errorHandler)
 
-export default app;
+export default app

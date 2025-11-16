@@ -327,6 +327,7 @@ pnpm prisma:migrate   # Ejecutar migraciones
 pnpm prisma:studio    # Abrir Prisma Studio
 pnpm seed             # Ejecutar seed (desarrollo)
 pnpm seed:prod        # Ejecutar seed (producción)
+pnpm test             # Ejecuta los tests
 ```
 
 ## Arquitectura
@@ -369,6 +370,4 @@ PORT=3002
 
 ## Notas
 
-- Usuario demo: `demo@roble.com` / `123456` (después de ejecutar seed)
-- El servidor valida ownership de tareas (403 si intentas acceder a tareas de otro usuario)
 - Los triggers de auditoría registran automáticamente todos los cambios en tareas

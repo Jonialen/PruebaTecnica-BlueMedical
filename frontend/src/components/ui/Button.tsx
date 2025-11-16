@@ -1,14 +1,31 @@
-// src/components/ui/Button.tsx
+// Button.tsx (src/components/ui/Button.tsx)
+
 import { clsx } from "clsx";
 import { Loader2 } from 'lucide-react';
 
+/**
+ * Props para el componente Button.
+ */
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    /** La variante de estilo del botón. */
     variant?: "primary" | "secondary" | "ghost" | "danger";
+    /** El tamaño del botón. */
     size?: "sm" | "md" | "lg";
+    /** Si el botón está en estado de carga. */
     loading?: boolean;
+    /** Un ícono para mostrar a la izquierda del texto. */
     icon?: React.ReactNode;
 }
 
+/**
+ * Componente de botón reutilizable con variantes de estilo y tamaños.
+ * 
+ * Proporciona un botón estilizado con soporte para diferentes apariencias,
+ * tamaños, estado de carga y un ícono opcional.
+ *
+ * @param {Props} props - Las propiedades del componente.
+ * @returns {JSX.Element} El componente de botón.
+ */
 export const Button = ({
     variant = "primary",
     size = "md",
@@ -19,8 +36,10 @@ export const Button = ({
     disabled,
     ...props
 }: Props) => {
+    // Estilos base aplicados a todos los botones.
     const baseStyles = "inline-flex items-center justify-center gap-2.5 font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:cursor-not-allowed";
 
+    // Definición de las variantes de estilo.
     const variants = {
         primary: clsx(
             "text-white border-2",
@@ -45,6 +64,7 @@ export const Button = ({
         ),
     };
 
+    // Definición de los tamaños.
     const sizes = {
         sm: "text-xs !px-4 !py-2.5 rounded-lg",
         md: "text-sm !px-3 !py-3 !my-2.5 rounded-xl",
@@ -62,6 +82,7 @@ export const Button = ({
                 (disabled || loading) && "opacity-60",
                 className
             )}
+            // Estilos en línea para manejar las variables de color del tema.
             style={
                 variant === "primary"
                     ? {
@@ -80,6 +101,7 @@ export const Button = ({
                             }
                             : undefined
             }
+            // Manejadores de eventos para los efectos hover.
             onMouseEnter={
                 variant === "primary"
                     ? (e) => {
@@ -115,6 +137,7 @@ export const Button = ({
                             : undefined
             }
         >
+            {/* Muestra un spinner si el botón está en estado de carga. */}
             {loading ? (
                 <>
                     <Loader2 className="w-4 h-4 animate-spin" />

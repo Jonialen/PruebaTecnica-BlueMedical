@@ -1,145 +1,95 @@
-// src/__tests__/integration/auth.test.ts
+// src/__tests__/middlewares/auth.middleware.test.ts
 
-import { describe, it, expect, jest, beforeAll, afterAll } from '@jest/globals';
-import request from 'supertest';
-import app from '../../app.js';
-import { prisma } from '../../prisma/client.js';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { Request, Response, NextFunction } from 'express';
 
-// Mock de Prisma
-jest.mock('../../prisma/client.js', () => ({
-  prisma: {
-    users: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-    },
-    $connect: jest.fn(),
-    $disconnect: jest.fn(),
+const mockVerifyToken = jest.fn();
+
+jest.unstable_mockModule('jsonwebtoken', () => ({
+  default: {
+    verify: mockVerifyToken,
+    sign: jest.fn(),
   },
+  verify: mockVerifyToken,
+  sign: jest.fn(),
 }));
 
-describe('Auth Integration Tests', () => {
-  beforeAll(async () => {
-    // Setup si es necesario
-  });
+const { authMiddleware } = await import('../../middlewares/auth.middleware.js');
 
-  afterAll(async () => {
-    // Cleanup
+describe('Auth Middleware', () => {
+  let mockReq: Partial<Request>;
+  let mockRes: Partial<Response>;
+  let mockNext: jest.MockedFunction<NextFunction>;
+
+  beforeEach(() => {
+    mockReq = {
+      headers: {},
+    };
+    mockRes = {};
+    mockNext = jest.fn() as jest.MockedFunction<NextFunction>;
     jest.clearAllMocks();
   });
 
-  describe('POST /api/register', () => {
-    it('should register a new user successfully', async () => {
-      const mockUser = {
-        id: 1,
-        name: 'Test User',
-        email: 'test@example.com',
-        password: '$2b$10$hashedpassword',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+  it('should call next() with valid token', () => {
+    const mockDecoded = { id: 1, email: 'test@example.com' };
+    
+    mockReq.headers = {
+      authorization: 'Bearer valid-token',
+    };
 
-      (prisma.users.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.users.create as jest.Mock).mockResolvedValue(mockUser);
+    mockVerifyToken.mockReturnValue(mockDecoded);
 
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password123',
-        });
+    authMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
-      expect(response.status).toBe(201);
-      expect(response.body.status).toBe('success');
-      expect(response.body.data.user.email).toBe('test@example.com');
-      expect(response.body.data.token).toBeDefined();
-    });
-
-    it('should return 400 for invalid email', async () => {
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Test User',
-          email: 'invalid-email',
-          password: 'password123',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
-    });
-
-    it('should return 400 for short password', async () => {
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Test User',
-          email: 'test@example.com',
-          password: '123',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
-    });
-
-    it('should return 400 for missing name', async () => {
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
-    });
+    expect(mockVerifyToken).toHaveBeenCalledWith('valid-token', expect.any(String));
+    expect((mockReq as any).user).toEqual(mockDecoded);
+    expect(mockNext).toHaveBeenCalledWith();
   });
 
-  describe('POST /api/login', () => {
-    it('should login successfully with valid credentials', async () => {
-      const mockUser = {
-        id: 1,
-        name: 'Test User',
-        email: 'test@example.com',
-        password: '$2b$10$hashedpassword',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+  it('should throw error when no authorization header', () => {
+    mockReq.headers = {};
 
-      (prisma.users.findUnique as jest.Mock).mockResolvedValue(mockUser);
+    expect(() => {
+      authMiddleware(mockReq as Request, mockRes as Response, mockNext);
+    }).toThrow('Authentication token was not provided');
+  });
 
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email: 'test@example.com',
-          password: 'password123',
-        });
+  it('should throw error when token is missing after Bearer', () => {
+    mockReq.headers = {
+      authorization: 'Bearer ',
+    };
 
-      expect(response.status).toBe(200);
-      expect(response.body.status).toBe('success');
-      expect(response.body.data.token).toBeDefined();
+    expect(() => {
+      authMiddleware(mockReq as Request, mockRes as Response, mockNext);
+    }).toThrow('Missing or malformed token');
+  });
+
+  it('should call next with error for invalid token', () => {
+    mockReq.headers = {
+      authorization: 'Bearer invalid-token',
+    };
+
+    const error = new Error('Invalid token');
+    error.name = 'JsonWebTokenError';
+    
+    mockVerifyToken.mockImplementation(() => {
+      throw error;
     });
 
-    it('should return 400 for invalid email format', async () => {
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email: 'invalid-email',
-          password: 'password123',
-        });
+    authMiddleware(mockReq as Request, mockRes as Response, mockNext);
 
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
-    });
+    expect(mockNext).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'JsonWebTokenError',
+    }));
+  });
 
-    it('should return 400 for missing password', async () => {
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email: 'test@example.com',
-        });
+  it('should throw error when authorization header has wrong format', () => {
+    mockReq.headers = {
+      authorization: 'InvalidFormat',
+    };
 
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
-    });
+    expect(() => {
+      authMiddleware(mockReq as Request, mockRes as Response, mockNext);
+    }).toThrow('Missing or malformed token');
   });
 });

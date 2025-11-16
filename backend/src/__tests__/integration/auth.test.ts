@@ -1,145 +1,135 @@
-// src/__tests__/integration/auth.test.ts
+// src/__tests__/services/auth.service.test.ts
 
-import { describe, it, expect, jest, beforeAll, afterAll } from '@jest/globals';
-import request from 'supertest';
-import app from '../../app.js';
-import { prisma } from '../../prisma/client.js';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
-// Mock de Prisma
-jest.mock('../../prisma/client.js', () => ({
-  prisma: {
-    users: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-    },
-    $connect: jest.fn(),
-    $disconnect: jest.fn(),
+const mockFindByEmail = jest.fn();
+const mockCreateUser = jest.fn();
+const mockHashPassword = jest.fn();
+const mockComparePassword = jest.fn();
+const mockGenerateToken = jest.fn();
+
+jest.unstable_mockModule('../../repositories/user.repository.js', () => ({
+  UserRepository: {
+    findByEmail: mockFindByEmail,
+    create: mockCreateUser,
   },
 }));
 
-describe('Auth Integration Tests', () => {
-  beforeAll(async () => {
-    // Setup si es necesario
-  });
+jest.unstable_mockModule('../../utils/bcrypt.js', () => ({
+  hashPassword: mockHashPassword,
+  comparePassword: mockComparePassword,
+}));
 
-  afterAll(async () => {
-    // Cleanup
+jest.unstable_mockModule('../../utils/jwt.js', () => ({
+  generateToken: mockGenerateToken,
+  verifyToken: jest.fn(),
+}));
+
+const { AuthService } = await import('../../services/auth.service.js');
+const { AppError } = await import('../../middlewares/error.middleware.js');
+
+describe('AuthService', () => {
+  beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('POST /api/register', () => {
+  describe('register', () => {
     it('should register a new user successfully', async () => {
       const mockUser = {
         id: 1,
         name: 'Test User',
         email: 'test@example.com',
-        password: '$2b$10$hashedpassword',
+        password: 'hashedPassword',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      (prisma.users.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.users.create as jest.Mock).mockResolvedValue(mockUser);
+      const mockToken = 'mock-jwt-token';
 
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Test User',
-          email: 'test@example.com',
-          password: 'password123',
-        });
+      mockFindByEmail.mockResolvedValue(null);
+      mockHashPassword.mockResolvedValue('hashedPassword');
+      mockCreateUser.mockResolvedValue(mockUser);
+      mockGenerateToken.mockReturnValue(mockToken);
 
-      expect(response.status).toBe(201);
-      expect(response.body.status).toBe('success');
-      expect(response.body.data.user.email).toBe('test@example.com');
-      expect(response.body.data.token).toBeDefined();
+      const result = await AuthService.register('Test User', 'test@example.com', 'password123');
+
+      expect(result).toEqual({
+        user: mockUser,
+        token: mockToken,
+      });
+      expect(mockFindByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockHashPassword).toHaveBeenCalledWith('password123');
+      expect(mockCreateUser).toHaveBeenCalled();
     });
 
-    it('should return 400 for invalid email', async () => {
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Test User',
-          email: 'invalid-email',
-          password: 'password123',
-        });
+    it('should throw error if user already exists', async () => {
+      const existingUser = {
+        id: 1,
+        email: 'test@example.com',
+        name: 'Existing User',
+        password: 'hash',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
-    });
+      mockFindByEmail.mockResolvedValue(existingUser);
 
-    it('should return 400 for short password', async () => {
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          name: 'Test User',
-          email: 'test@example.com',
-          password: '123',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
-    });
-
-    it('should return 400 for missing name', async () => {
-      const response = await request(app)
-        .post('/api/register')
-        .send({
-          email: 'test@example.com',
-          password: 'password123',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
+      await expect(
+        AuthService.register('Test User', 'test@example.com', 'password123')
+      ).rejects.toThrow(new AppError(409, 'User already exists'));
     });
   });
 
-  describe('POST /api/login', () => {
-    it('should login successfully with valid credentials', async () => {
+  describe('login', () => {
+    it('should login user with valid credentials', async () => {
       const mockUser = {
         id: 1,
         name: 'Test User',
         email: 'test@example.com',
-        password: '$2b$10$hashedpassword',
+        password: 'hashedPassword',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      (prisma.users.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      const mockToken = 'mock-jwt-token';
 
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email: 'test@example.com',
-          password: 'password123',
-        });
+      mockFindByEmail.mockResolvedValue(mockUser);
+      mockComparePassword.mockResolvedValue(true);
+      mockGenerateToken.mockReturnValue(mockToken);
 
-      expect(response.status).toBe(200);
-      expect(response.body.status).toBe('success');
-      expect(response.body.data.token).toBeDefined();
+      const result = await AuthService.login('test@example.com', 'password123');
+
+      expect(result).toEqual({
+        user: mockUser,
+        token: mockToken,
+      });
+      expect(mockComparePassword).toHaveBeenCalledWith('password123', 'hashedPassword');
     });
 
-    it('should return 400 for invalid email format', async () => {
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email: 'invalid-email',
-          password: 'password123',
-        });
+    it('should throw error if user not found', async () => {
+      mockFindByEmail.mockResolvedValue(null);
 
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
+      await expect(
+        AuthService.login('nonexistent@example.com', 'password123')
+      ).rejects.toThrow(new AppError(401, 'Invalid credentials'));
     });
 
-    it('should return 400 for missing password', async () => {
-      const response = await request(app)
-        .post('/api/login')
-        .send({
-          email: 'test@example.com',
-        });
+    it('should throw error if password is invalid', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        password: 'hashedPassword',
+        name: 'Test',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-      expect(response.status).toBe(400);
-      expect(response.body.status).toBe('error');
+      mockFindByEmail.mockResolvedValue(mockUser);
+      mockComparePassword.mockResolvedValue(false);
+
+      await expect(
+        AuthService.login('test@example.com', 'wrongpassword')
+      ).rejects.toThrow(new AppError(401, 'Invalid credentials'));
     });
   });
 });

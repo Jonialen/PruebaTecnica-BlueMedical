@@ -1,4 +1,5 @@
-// src/pages/Tasks.tsx
+// Tasks.tsx (src/pages/Tasks.tsx)
+
 import { useEffect, useState } from "react";
 import { useTaskStore } from "@hooks/useTaskStore";
 import { useAuthStore } from "@hooks/useAuthStore";
@@ -10,40 +11,66 @@ import type { Task } from "@models/task.types";
 import { Button } from "@components/ui/Button";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * Página principal de gestión de tareas.
+ * 
+ * Muestra la lista de tareas del usuario, permite filtrarlas, buscarlas,
+ * crearlas, editarlas y eliminarlas. También muestra estadísticas sobre las tareas.
+ *
+ * @returns {JSX.Element} La página de gestión de tareas.
+ */
 export default function Tasks() {
     const navigate = useNavigate();
     const { tasks, fetchTasks, addTask, updateTask, deleteTask, loading } = useTaskStore();
     const { logout, user } = useAuthStore();
+
+    // Estado para el filtro de tareas (todas, pendientes, etc.).
     const [filter, setFilter] = useState<"ALL" | "PENDING" | "IN_PROGRESS" | "COMPLETED">("ALL");
+    // Estado para el término de búsqueda.
     const [search, setSearch] = useState("");
+    // Estado para la tarea seleccionada que se editará en el modal.
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    // Estado para controlar si el modal de creación de tarea está abierto.
     const [isCreating, setIsCreating] = useState(false);
 
+    // Efecto para cargar las tareas cuando cambia el filtro.
     useEffect(() => {
         fetchTasks(filter !== "ALL" ? filter : undefined);
     }, [filter, fetchTasks]);
 
+    // Filtra las tareas según el término de búsqueda.
     const filteredTasks = tasks.filter(
         (t) =>
             t.title.toLowerCase().includes(search.toLowerCase()) ||
             (t.description ?? "").toLowerCase().includes(search.toLowerCase())
     );
 
+    /**
+     * Abre el modal para editar una tarea existente.
+     * @param {Task} task - La tarea a editar.
+     */
     const openTask = (task: Task) => {
         setSelectedTask(task);
         setIsCreating(false);
     };
 
+    /**
+     * Abre el modal para crear una nueva tarea.
+     */
     const openNewTask = () => {
         setIsCreating(true);
         setSelectedTask(null);
     };
 
+    /**
+     * Cierra la sesión del usuario y lo redirige a la página de login.
+     */
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
 
+    // Definición de los filtros disponibles.
     const filters = [
         { key: "ALL", label: "Todas" },
         { key: "PENDING", label: "Pendientes" },
@@ -51,6 +78,7 @@ export default function Tasks() {
         { key: "COMPLETED", label: "Completadas" },
     ];
 
+    // Cálculo de estadísticas de las tareas.
     const taskCount = filteredTasks.length;
     const completedCount = filteredTasks.filter(t => t.status === "COMPLETED").length;
     const pendingCount = filteredTasks.filter(t => t.status === "PENDING").length;
@@ -59,13 +87,14 @@ export default function Tasks() {
 
     return (
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}>
+            {/* Encabezado de la página */}
             <header className="sticky top-0 z-20 border-b" style={{
                 backgroundColor: 'var(--bg-secondary)',
                 borderColor: 'var(--border-primary)',
                 boxShadow: 'var(--shadow-sm)'
             }}>
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-                    {/* Top Bar */}
+                    {/* Barra superior con el título y el saludo al usuario. */}
                     <div className="flex items-center justify-between !pt-2">
                         <div className="flex items-center gap-4 !px-2">
                             <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--brand-500)' }}>
@@ -104,7 +133,7 @@ export default function Tasks() {
                         </div>
                     </div>
 
-                    {/* Search Bar */}
+                    {/* Barra de búsqueda */}
                     <div className="!pt-4">
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: 'var(--text-tertiary)' }} />
@@ -131,6 +160,7 @@ export default function Tasks() {
                         </div>
                     </div>
 
+                    {/* Filtros y botón de nueva tarea */}
                     <div className="pb-8 flex items-center gap-5 overflow-x-auto scrollbar-none !px-2">
                         {filters.map(({ key, label }) => (
                             <button
@@ -160,9 +190,11 @@ export default function Tasks() {
                 </div>
             </header>
 
+            {/* Estadísticas de las tareas */}
             {taskCount > 0 && (
                 <div className="max-w-7xl mx-auto w-full px-6 sm:px-8 lg:px-10 !mt-3">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 m">
+                        {/* Tarjetas de estadísticas */}
                         <div className="p-6 rounded-2xl border-2 transition-all duration-200 hover:scale-105 my-2" style={{
                             backgroundColor: 'var(--bg-secondary)',
                             borderColor: 'var(--border-primary)',
@@ -200,7 +232,7 @@ export default function Tasks() {
                         </div>
                     </div>
 
-                    {/* Progress bar */}
+                    {/* Barra de progreso general */}
                     <div className="!my-3 !p-2 rounded-2xl border-2 shadow-sm" style={{
                         backgroundColor: 'var(--bg-secondary)',
                         borderColor: 'var(--border-primary)'
@@ -222,10 +254,11 @@ export default function Tasks() {
                 </div>
             )}
 
-            {/* Main Content */}
+            {/* Contenido principal: lista de tareas */}
             <main className="flex-1 overflow-y-auto p-8 sm:p-10 lg:p-12">
                 <div className="max-w-7xl mx-auto">
                     {loading ? (
+                        // Muestra un spinner de carga mientras se obtienen las tareas.
                         <div className="flex flex-col items-center justify-center !py-5">
                             <Loader2 className="w-16 h-16 animate-spin" style={{ color: 'var(--brand-500)' }} />
                             <p className="mt-6 font-medium" style={{ color: 'var(--text-secondary)' }}>
@@ -233,6 +266,7 @@ export default function Tasks() {
                             </p>
                         </div>
                     ) : filteredTasks.length === 0 ? (
+                        // Muestra un mensaje cuando no hay tareas.
                         <div className="flex flex-col items-center justify-center !py-5">
                             <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6" style={{
                                 backgroundColor: 'var(--bg-tertiary)'
@@ -254,6 +288,7 @@ export default function Tasks() {
                             )}
                         </div>
                     ) : (
+                        // Muestra la lista de tareas.
                         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
                             {filteredTasks.map((task) => (
                                 <TaskCard
@@ -269,7 +304,7 @@ export default function Tasks() {
                 </div>
             </main>
 
-            {/* Modal */}
+            {/* Modal para crear o editar tareas */}
             {(selectedTask || isCreating) && (
                 <TaskEditorModal
                     task={selectedTask}

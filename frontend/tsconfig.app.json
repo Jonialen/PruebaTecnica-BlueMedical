@@ -1,7 +1,11 @@
+// tsconfig.app.json (tsconfig.app.json)
+
 {
+  // Configuración de TypeScript específica para la aplicación frontend.
+  // Extiende la configuración base y define opciones para compilar el código de la aplicación.
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
+    "baseUrl": ".", // Directorio base para la resolución de módulos.
+    "paths": { // Mapeo de rutas para importaciones absolutas.
       "@/*": ["src/*"],
       "@components/*": ["src/components/*"],
       "@pages/*": ["src/pages/*"],
@@ -12,29 +16,29 @@
       "@utils/*": ["src/utils/*"],
       "@api/*": ["src/api/*"]
     },
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2022",
-    "useDefineForClassFields": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "types": ["vite/client"],
-    "skipLibCheck": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo", // Archivo para información de compilación incremental.
+    "target": "ES2022", // Versión de ECMAScript a la que se compilará el código.
+    "useDefineForClassFields": true, // Habilita el uso de `define` para campos de clase.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"], // Librerías de tipos a incluir.
+    "module": "ESNext", // Sistema de módulos a utilizar.
+    "types": ["vite/client"], // Incluye tipos específicos de Vite.
+    "skipLibCheck": true, // Omite la verificación de tipos de las librerías.
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-    "jsx": "react-jsx",
+    /* Modo Bundler */
+    "moduleResolution": "bundler", // Estrategia de resolución de módulos para bundlers.
+    "allowImportingTsExtensions": true, // Permite importar archivos .ts/.tsx con extensiones.
+    "verbatimModuleSyntax": true, // Asegura que la sintaxis de importación/exportación se mantenga.
+    "moduleDetection": "force", // Fuerza la detección de módulos.
+    "noEmit": true, // No emite archivos JavaScript, solo realiza la verificación de tipos.
+    "jsx": "react-jsx", // Soporte para JSX con la transformación de React.
 
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    /* Linting y comprobaciones estrictas */
+    "strict": true, // Habilita todas las opciones de verificación de tipos estrictas.
+    "noUnusedLocals": true, // Reporta errores para variables locales no utilizadas.
+    "noUnusedParameters": true, // Reporta errores para parámetros de función no utilizados.
+    "erasableSyntaxOnly": true, // Solo permite sintaxis que se puede borrar (experimental).
+    "noFallthroughCasesInSwitch": true, // Reporta errores para casos `switch` sin `break`.
+    "noUncheckedSideEffectImports": true // Reporta errores para importaciones con efectos secundarios no verificados.
   },
-  "include": ["src"]
+  "include": ["src"] // Archivos a incluir en la compilación.
 }

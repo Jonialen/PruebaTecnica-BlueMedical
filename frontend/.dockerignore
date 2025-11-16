@@ -1,31 +1,43 @@
-# Node modules (se instalarán dentro del contenedor)
+# .dockerignore (.dockerignore)
+# Este archivo especifica los archivos y directorios que Docker debe ignorar
+# al construir la imagen, similar a .gitignore. Esto ayuda a mantener la imagen
+# ligera y a evitar copiar archivos innecesarios.
+
+# Directorios de módulos de Node.js (se instalarán dentro del contenedor)
+# No es necesario copiarlos desde el host, ya que se instalarán las dependencias
+# limpias dentro del contenedor.
 node_modules
 /.pnp
 .pnp.js
 
-# Build local
+# Archivos y directorios de construcción local
+# Los artefactos de construcción generados localmente no deben incluirse.
 dist
 build
 
-# Logs
+# Archivos de logs de gestores de paquetes
+# Estos archivos son temporales y no son necesarios en la imagen final.
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Configuración del entorno local
+# Archivos de configuración del entorno local
+# Contienen información sensible o específica del entorno de desarrollo.
 .env
 .env.local
 .env.*.local
 
-# Sistema operativo y editor
+# Archivos del sistema operativo y de configuración del editor
+# Son específicos del entorno de desarrollo y no relevantes para la aplicación en producción.
 .DS_Store
 Thumbs.db
 .vscode
 .idea
 *.swp
 
-# Git
+# Archivos relacionados con Git
+# El historial de Git y la configuración no son necesarios en la imagen final.
 .git
 .gitignore
 README.md
